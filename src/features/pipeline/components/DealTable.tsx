@@ -10,7 +10,9 @@ import { flexRender } from "@tanstack/react-table";
 // plan's acceptance criteria and its "getCoreRowModel() only" intent.
 import { getCoreRowModel, legacyCreateColumnHelper, useLegacyTable } from "@tanstack/react-table/legacy";
 import { format, parseISO } from "date-fns";
+import { StageSelect } from "@/features/pipeline/components/StageSelect";
 import type { Deal } from "@/shared/types/deal";
+import { toPipelineGroup } from "@/shared/utils/pipeline-group";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -37,6 +39,13 @@ const columns = [
   columnHelper.accessor("closeDate", {
     header: "Close Date",
     cell: (info) => format(parseISO(info.getValue()), "MMM d, yyyy"),
+  }),
+  columnHelper.display({
+    id: "stage",
+    header: "Stage",
+    cell: (info) => (
+      <StageSelect dealId={info.row.original.id} currentGroup={toPipelineGroup(info.row.original)} />
+    ),
   }),
 ];
 
