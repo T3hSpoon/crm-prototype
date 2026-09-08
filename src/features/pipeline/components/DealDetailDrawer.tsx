@@ -4,12 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { usePipelineStore } from "@/features/pipeline/store/pipelineStore";
 import {
   dealEditSchema,
   type DealEditFormInput,
   type DealEditFormValues,
 } from "@/features/pipeline/components/deal-edit-schema";
+import { LineItemsTable } from "@/features/pipeline/components/LineItemsTable";
 import type { PipelineGroup } from "@/shared/types/deal";
 import { toPipelineGroup } from "@/shared/utils/pipeline-group";
 
@@ -240,6 +242,11 @@ export function DealDetailDrawer({ open, onOpenChange, dealId }: DealDetailDrawe
               )}
             />
           </FieldGroup>
+          <Separator />
+          <div className="flex flex-col gap-2">
+            <h3 className="text-base font-semibold">Line Items</h3>
+            <LineItemsTable dealId={deal.id} lineItems={deal.lineItems} />
+          </div>
         </div>
       </SheetContent>
     </Sheet>

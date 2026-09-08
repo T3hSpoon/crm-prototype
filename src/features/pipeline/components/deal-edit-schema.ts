@@ -19,3 +19,30 @@ export type DealEditFormValues = z.infer<typeof dealEditSchema>;
  * line up, mirroring `AddDealFormInput`'s rationale in add-deal-schema.ts.
  */
 export type DealEditFormInput = z.input<typeof dealEditSchema>;
+
+/**
+ * Validation for a single line-item row (DEAL-04). `productOrService`/`sku`
+ * are intentionally NOT required-non-empty — unlike Name/Owner on the deal,
+ * a line item can persist with those left blank (02-02-PLAN.md must_haves,
+ * DEAL-04 empty). `units`/`unitPrice` mirror Value's create-time
+ * coerced-positive constraint so zero/negative numbers are rejected at
+ * form-validation level, never silently accepted into a subtotal.
+ */
+export const lineItemSchema = z.object({
+  id: z.string(),
+  productOrService: z.string(),
+  sku: z.string(),
+  units: z.coerce.number().positive("Must be positive"),
+  unitPrice: z.coerce.number().positive("Must be positive"),
+  type: z.enum(["product", "service"]),
+});
+
+export const lineItemsSchema = z.object({ lineItems: z.array(lineItemSchema) });
+
+export type LineItemsFormValues = z.infer<typeof lineItemsSchema>;
+
+/**
+ * Pre-coercion input shape for the line-items field array — same
+ * `z.coerce.number()` / two-type-export rationale as `DealEditFormInput`.
+ */
+export type LineItemsFormInput = z.input<typeof lineItemsSchema>;
