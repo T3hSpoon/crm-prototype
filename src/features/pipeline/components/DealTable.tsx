@@ -60,7 +60,6 @@ const columns = [
 
 interface DealTableProps {
   deals: Deal[];
-  onRowClick: (dealId: string) => void;
 }
 
 /**
@@ -70,7 +69,7 @@ interface DealTableProps {
  * GroupSection already owns its own pre-partitioned `deals` slice (see
  * usePipelineGroups / 01-RESEARCH.md Pattern 1).
  */
-export function DealTable({ deals, onRowClick }: DealTableProps) {
+export function DealTable({ deals }: DealTableProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const toggleExpanded = (dealId: string) => {
@@ -144,10 +143,7 @@ export function DealTable({ deals, onRowClick }: DealTableProps) {
           ) : (
             table.getRowModel().rows.map((row) => (
               <Fragment key={row.id}>
-                <tr
-                  className="cursor-pointer border-t border-border"
-                  onClick={() => onRowClick(row.original.id)}
-                >
+                <tr className="border-t border-border">
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-2">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
