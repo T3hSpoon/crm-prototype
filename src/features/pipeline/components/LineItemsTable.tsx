@@ -17,6 +17,7 @@ import {
   type LineItemsFormInput,
   type LineItemsFormValues,
 } from "@/features/pipeline/components/deal-edit-schema";
+import { UPDATE_FAILED_MESSAGE } from "@/features/pipeline/constants";
 import type { Deal, LineItem, LineItemType } from "@/shared/types/deal";
 import { computeSubtotal, sumLineItems } from "@/shared/utils/line-items";
 
@@ -25,10 +26,6 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
   maximumFractionDigits: 0,
 });
-
-/** Copywriting Contract "Error state" row, 02-UI-SPEC.md — same text used by
- * the drawer's core fields and EditableCell. */
-const UPDATE_FAILED_MESSAGE = "Update failed — your change wasn't saved. Try again.";
 
 const TYPE_OPTIONS: { value: LineItemType; label: string }[] = [
   { value: "product", label: "Product" },

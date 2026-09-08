@@ -2,15 +2,13 @@ import { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { usePipelineStore } from "@/features/pipeline/store/pipelineStore";
 import { dealEditSchema } from "@/features/pipeline/components/deal-edit-schema";
+import { UPDATE_FAILED_MESSAGE } from "@/features/pipeline/constants";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
   maximumFractionDigits: 0,
 });
-
-/** Copywriting Contract "Error state" row, 02-UI-SPEC.md. */
-const UPDATE_FAILED_MESSAGE = "Update failed — your change wasn't saved. Try again.";
 
 type EditableColumnId = "name" | "value" | "owner" | "closeDate";
 

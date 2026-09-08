@@ -14,6 +14,7 @@ import {
   type DealEditFormValues,
 } from "@/features/pipeline/components/deal-edit-schema";
 import { LineItemsTable } from "@/features/pipeline/components/LineItemsTable";
+import { UPDATE_FAILED_MESSAGE } from "@/features/pipeline/constants";
 import type { PipelineGroup } from "@/shared/types/deal";
 import { toPipelineGroup } from "@/shared/utils/pipeline-group";
 import { hasManualOverride, sumLineItems } from "@/shared/utils/line-items";
@@ -26,9 +27,6 @@ const GROUP_LABELS: Record<PipelineGroup, string> = {
   deal: "Deal / Won",
   lost: "Lost",
 };
-
-/** Copywriting Contract "Error state" row, 02-UI-SPEC.md. */
-const UPDATE_FAILED_MESSAGE = "Update failed — your change wasn't saved. Try again.";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
