@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { usePipelineStore } from "@/features/pipeline/store/pipelineStore";
+import { dealEditSchema } from "@/features/pipeline/components/deal-edit-schema";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -46,7 +47,12 @@ export function EditableCell({ dealId, columnId, value }: EditableCellProps) {
     columnId === "value"
       ? currencyFormatter.format(Number(value))
       : columnId === "closeDate"
-        ? format(parseISO(String(value)), "MMM d, yyyy")
+        ? // Defensively guard against an empty/invalid closeDate already in the
+          // store (e.g. from an earlier bug or bad seed) — format() throws
+          // RangeError on an Invalid Date, and there is no ErrorBoundary.
+          value
+          ? format(parseISO(String(value)), "MMM d, yyyy")
+          : "—"
         : String(value);
 
   if (!isEditing) {
@@ -73,10 +79,20 @@ export function EditableCell({ dealId, columnId, value }: EditableCellProps) {
   const commit = async () => {
     setIsEditing(false);
     if (isPending || draft === lastCommitted) return;
+    // Reuse the same per-field rule the drawer's dealEditSchema-backed form
+    // uses (DEAL-02 boundary/empty) — reject and revert client-side, never
+    // send an invalid draft to the store.
+    const candidate = columnId === "value" ? Number(draft) : draft;
+    const parsed = dealEditSchema.shape[columnId].safeParse(candidate);
+    if (!parsed.success) {
+      setDraft(lastCommitted);
+      setError(parsed.error.issues[0]?.message ?? UPDATE_FAILED_MESSAGE);
+      return;
+    }
     setIsPending(true);
     try {
       await usePipelineStore.getState().updateDeal(dealId, {
-        [columnId]: columnId === "value" ? Number(draft) : draft,
+        [columnId]: parsed.data,
       });
       setError(null);
     } catch {
