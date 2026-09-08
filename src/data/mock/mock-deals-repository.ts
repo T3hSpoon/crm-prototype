@@ -3,6 +3,17 @@ import type { Deal, NewDealInput } from "@/shared/types/deal";
 import { fromPipelineGroup } from "@/shared/utils/pipeline-group";
 import { seedDeals } from "@/data/mock/seed-data";
 
+// Replaces the previous Web Crypto UUID-based id assignment in create() —
+// generates a 10-digit numeric string id, matching the format used by
+// seed-data.ts's buildSeedDeal().
+function generateDealId(): string {
+  let id = "";
+  for (let i = 0; i < 10; i++) {
+    id += Math.floor(Math.random() * 10);
+  }
+  return id;
+}
+
 /**
  * In-memory implementation of DealsRepository, seeded from seed-data.ts.
  * Stands in for a future real API/DB implementation — every method resolves
@@ -26,7 +37,7 @@ export class MockDealsRepository implements DealsRepository {
   create(input: NewDealInput): Promise<Deal> {
     const { pipelineStage, outcome } = fromPipelineGroup(input.group);
     const deal: Deal = {
-      id: crypto.randomUUID(),
+      id: generateDealId(),
       name: input.name,
       company: input.company,
       value: input.value,
