@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RotateCcw } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -14,6 +16,7 @@ import {
 import { LineItemsTable } from "@/features/pipeline/components/LineItemsTable";
 import type { PipelineGroup } from "@/shared/types/deal";
 import { toPipelineGroup } from "@/shared/utils/pipeline-group";
+import { hasManualOverride, sumLineItems } from "@/shared/utils/line-items";
 
 /** Same 5 labeled stage options StageSelect/AddDealDialog both use. */
 const GROUP_LABELS: Record<PipelineGroup, string> = {
@@ -26,6 +29,12 @@ const GROUP_LABELS: Record<PipelineGroup, string> = {
 
 /** Copywriting Contract "Error state" row, 02-UI-SPEC.md. */
 const UPDATE_FAILED_MESSAGE = "Update failed — your change wasn't saved. Try again.";
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
 
 type EditableField = keyof DealEditFormValues;
 
@@ -109,6 +118,9 @@ export function DealDetailDrawer({ open, onOpenChange, dealId }: DealDetailDrawe
   }
 
   const currentGroup = toPipelineGroup(deal);
+  // Never stored — always freshly derived every render (DEAL-05).
+  const computed = sumLineItems(deal.lineItems);
+  const overridden = hasManualOverride(deal);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -161,6 +173,8 @@ export function DealDetailDrawer({ open, onOpenChange, dealId }: DealDetailDrawe
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name}>Value</FieldLabel>
+                  {/* Display typography (20px/600) — this drawer's single most
+                      prominent number, per 02-UI-SPEC.md's Typography table. */}
                   <Input
                     {...field}
                     value={(field.value as string | number | undefined) ?? ""}
@@ -168,6 +182,7 @@ export function DealDetailDrawer({ open, onOpenChange, dealId }: DealDetailDrawe
                     type="number"
                     min={0}
                     step="any"
+                    className="text-xl font-semibold"
                     aria-invalid={fieldState.invalid}
                     disabled={pendingFields.has("value")}
                     onChange={(e) => {
@@ -182,6 +197,18 @@ export function DealDetailDrawer({ open, onOpenChange, dealId }: DealDetailDrawe
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   {!fieldState.invalid && fieldErrors.value && (
                     <FieldError>{fieldErrors.value}</FieldError>
+                  )}
+                  {overridden && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-fit"
+                      onClick={() => void usePipelineStore.getState().updateDeal(dealId, { value: computed })}
+                    >
+                      <RotateCcw data-icon="inline-start" />
+                      Reset to sum ({currencyFormatter.format(computed)})
+                    </Button>
                   )}
                 </Field>
               )}
@@ -245,7 +272,12 @@ export function DealDetailDrawer({ open, onOpenChange, dealId }: DealDetailDrawe
           <Separator />
           <div className="flex flex-col gap-2">
             <h3 className="text-base font-semibold">Line Items</h3>
-            <LineItemsTable dealId={deal.id} lineItems={deal.lineItems} />
+            <LineItemsTable
+              dealId={deal.id}
+              lineItems={deal.lineItems}
+              value={deal.value}
+              overridden={overridden}
+            />
           </div>
         </div>
       </SheetContent>

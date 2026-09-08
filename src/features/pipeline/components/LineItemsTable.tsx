@@ -16,8 +16,8 @@ import {
   type LineItemsFormInput,
   type LineItemsFormValues,
 } from "@/features/pipeline/components/deal-edit-schema";
-import type { LineItem, LineItemType } from "@/shared/types/deal";
-import { computeSubtotal } from "@/shared/utils/line-items";
+import type { Deal, LineItem, LineItemType } from "@/shared/types/deal";
+import { computeSubtotal, sumLineItems } from "@/shared/utils/line-items";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -33,6 +33,13 @@ const TYPE_OPTIONS: { value: LineItemType; label: string }[] = [
 interface LineItemsTableProps {
   dealId: string;
   lineItems: LineItem[];
+  /** The deal's current value — used to decide whether to fold an
+   * auto-tracked value patch into the same commit as the line-item change. */
+  value: number;
+  /** Whether the deal's value has diverged from its computed line-item sum
+   * (DEAL-05). While overridden, line-item commits never silently rewrite
+   * `value` — only the drawer's explicit reset-to-sum affordance does. */
+  overridden: boolean;
 }
 
 /**
@@ -41,9 +48,13 @@ interface LineItemsTableProps {
  * empty-row copy). Every field commits independently on blur/change via
  * `commitLineItems()`, which reads the table's FULL current form state (not
  * a single row in isolation) and patches the entire `lineItems` array in one
- * `updateDeal` call — closes the DEAL-04 concurrency gap.
+ * `updateDeal` call — closes the DEAL-04 concurrency gap. When the deal is
+ * NOT overridden, that same call also patches `value` to the freshly
+ * computed sum (DEAL-05) — a single store call, never two sequential ones,
+ * so an in-progress manual edit to Value cannot be raced or clobbered by a
+ * separate auto-tracking write.
  */
-export function LineItemsTable({ dealId, lineItems }: LineItemsTableProps) {
+export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTableProps) {
   const form = useForm<LineItemsFormInput, unknown, LineItemsFormValues>({
     resolver: zodResolver(lineItemsSchema),
     values: { lineItems },
@@ -66,7 +77,11 @@ export function LineItemsTable({ dealId, lineItems }: LineItemsTableProps) {
       unitPrice: Number(item.unitPrice),
       type: item.type,
     }));
-    await usePipelineStore.getState().updateDeal(dealId, { lineItems: nextLineItems });
+    const patch: Partial<Pick<Deal, "lineItems" | "value">> = { lineItems: nextLineItems };
+    if (!overridden) {
+      patch.value = sumLineItems(nextLineItems);
+    }
+    await usePipelineStore.getState().updateDeal(dealId, patch);
   };
 
   const handleAdd = () => {

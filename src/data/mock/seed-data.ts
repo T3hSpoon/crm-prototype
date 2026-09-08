@@ -1,7 +1,22 @@
 import { faker } from "@faker-js/faker";
-import type { Deal, PipelineStage } from "@/shared/types/deal";
+import type { Deal, LineItem, LineItemType, PipelineStage } from "@/shared/types/deal";
+import { sumLineItems } from "@/shared/utils/line-items";
 
 const STAGES: PipelineStage[] = ["prospect", "lead", "opportunity", "deal"];
+const LINE_ITEM_TYPES: LineItemType[] = ["product", "service"];
+
+function buildSeedLineItem(): LineItem {
+  return {
+    // Never a sequential counter or array index (research/PITFALLS.md
+    // Pitfall 1/5) — same id convention as Deal.id.
+    id: faker.string.uuid(),
+    productOrService: faker.commerce.productName(),
+    sku: faker.string.alphanumeric(8).toUpperCase(),
+    units: faker.number.int({ min: 1, max: 20 }),
+    unitPrice: faker.number.int({ min: 50, max: 5_000 }),
+    type: faker.helpers.arrayElement(LINE_ITEM_TYPES),
+  };
+}
 
 function buildSeedDeal(): Deal {
   const pipelineStage = faker.helpers.arrayElement(STAGES);
@@ -10,19 +25,30 @@ function buildSeedDeal(): Deal {
   // Phase 3, so all non-lost deals (including "deal" stage) stay "open".
   const isLost = faker.datatype.boolean({ probability: 0.15 });
 
+  // 0-4 line items per deal (DEAL-04/DEAL-05 seed data). When non-empty, the
+  // deal's value is set to the computed sum so seeded deals start in the
+  // auto-tracked (non-overridden) state; an empty array leaves the existing
+  // independent random value generation below unchanged.
+  const lineItemCount = faker.number.int({ min: 0, max: 4 });
+  const lineItems: LineItem[] =
+    lineItemCount === 0
+      ? []
+      : Array.from({ length: lineItemCount }, buildSeedLineItem);
+
   return {
     id: faker.string.uuid(),
     name: faker.company.buzzPhrase(),
     company: faker.company.name(),
-    value: faker.number.int({ min: 5_000, max: 250_000 }),
+    value:
+      lineItems.length > 0
+        ? sumLineItems(lineItems)
+        : faker.number.int({ min: 5_000, max: 250_000 }),
     owner: faker.person.fullName(),
     closeDate: faker.date.soon({ days: 90 }).toISOString(),
     pipelineStage,
     outcome: isLost ? "lost" : "open",
     createdAt: faker.date.recent({ days: 60 }).toISOString(),
-    // Populating realistic line items is plan 02-02's job — every seed deal
-    // starts empty here.
-    lineItems: [],
+    lineItems,
   };
 }
 
