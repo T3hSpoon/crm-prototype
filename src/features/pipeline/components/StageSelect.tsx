@@ -35,17 +35,22 @@ export function StageSelect({ dealId, currentGroup }: StageSelectProps) {
   };
 
   return (
-    <Select value={currentGroup} onValueChange={handleValueChange}>
-      <SelectTrigger size="sm" aria-label="Move deal to stage">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {GROUP_OPTIONS.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    // Stops the row's onRowClick (D-02/Pitfall 2) — Radix's SelectTrigger
+    // does not stop propagation itself, and the row now opens the detail
+    // drawer on click.
+    <div onClick={(e) => e.stopPropagation()}>
+      <Select value={currentGroup} onValueChange={handleValueChange}>
+        <SelectTrigger size="sm" aria-label="Move deal to stage">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {GROUP_OPTIONS.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

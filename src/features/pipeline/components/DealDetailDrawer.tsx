@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -21,6 +22,11 @@ const GROUP_LABELS: Record<PipelineGroup, string> = {
   lost: "Lost",
 };
 
+/** Copywriting Contract "Error state" row, 02-UI-SPEC.md. */
+const UPDATE_FAILED_MESSAGE = "Update failed — your change wasn't saved. Try again.";
+
+type EditableField = keyof DealEditFormValues;
+
 interface DealDetailDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -33,15 +39,58 @@ interface DealDetailDrawerProps {
  * auto-committing core-field edits on blur. A field commit handler must
  * never programmatically close the sheet — only the Sheet's own close
  * affordances (close button, overlay click, Escape) ever close it (D-03).
+ *
+ * Each of the four core fields (name, value, owner, closeDate) commits
+ * independently on blur. A `pendingFields` set disables a field from
+ * re-entry while its own commit is in flight (guards the carried-forward
+ * Pitfall 5 double-submit gap); a rejected commit reverts that field to the
+ * deal's last-known value and shows an inline "Update failed" banner.
  */
 export function DealDetailDrawer({ open, onOpenChange, dealId }: DealDetailDrawerProps) {
   const deal = usePipelineStore((s) => s.deals.find((d) => d.id === dealId));
   const updateDeal = usePipelineStore((s) => s.updateDeal);
+  const [pendingFields, setPendingFields] = useState<Set<EditableField>>(new Set());
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<EditableField, string>>>({});
 
   const form = useForm<DealEditFormInput, unknown, DealEditFormValues>({
     resolver: zodResolver(dealEditSchema),
-    values: { name: deal?.name ?? "" },
+    values: {
+      name: deal?.name ?? "",
+      value: deal?.value ?? 0,
+      owner: deal?.owner ?? "",
+      closeDate: deal?.closeDate ?? "",
+    },
   });
+
+  const clearFieldError = (name: EditableField) => {
+    setFieldErrors((prev) => {
+      if (!(name in prev)) return prev;
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+  };
+
+  const commitField = async (name: EditableField, value: DealEditFormValues[EditableField]) => {
+    if (!dealId) return;
+    setPendingFields((prev) => new Set(prev).add(name));
+    try {
+      await updateDeal(dealId, { [name]: value });
+      clearFieldError(name);
+    } catch {
+      // Revert to the deal's last-known value, read fresh from the store —
+      // the store's own state is the source of truth, not this local form.
+      const fresh = usePipelineStore.getState().deals.find((d) => d.id === dealId);
+      if (fresh) form.setValue(name, fresh[name] as DealEditFormInput[EditableField]);
+      setFieldErrors((prev) => ({ ...prev, [name]: UPDATE_FAILED_MESSAGE }));
+    } finally {
+      setPendingFields((prev) => {
+        const next = new Set(prev);
+        next.delete(name);
+        return next;
+      });
+    }
+  };
 
   if (!deal || !dealId) {
     return (
@@ -81,12 +130,106 @@ export function DealDetailDrawer({ open, onOpenChange, dealId }: DealDetailDrawe
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
+                    disabled={pendingFields.has("name")}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      clearFieldError("name");
+                    }}
                     onBlur={() => {
                       field.onBlur();
-                      void updateDeal(dealId, { name: field.value });
+                      if (!fieldState.invalid) void commitField("name", field.value);
                     }}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {!fieldState.invalid && fieldErrors.name && (
+                    <FieldError>{fieldErrors.name}</FieldError>
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              name="value"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Value</FieldLabel>
+                  <Input
+                    {...field}
+                    value={(field.value as string | number | undefined) ?? ""}
+                    id={field.name}
+                    type="number"
+                    min={0}
+                    step="any"
+                    aria-invalid={fieldState.invalid}
+                    disabled={pendingFields.has("value")}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      clearFieldError("value");
+                    }}
+                    onBlur={() => {
+                      field.onBlur();
+                      if (!fieldState.invalid) void commitField("value", Number(field.value));
+                    }}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {!fieldState.invalid && fieldErrors.value && (
+                    <FieldError>{fieldErrors.value}</FieldError>
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              name="owner"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Owner</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                    disabled={pendingFields.has("owner")}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      clearFieldError("owner");
+                    }}
+                    onBlur={() => {
+                      field.onBlur();
+                      if (!fieldState.invalid) void commitField("owner", field.value);
+                    }}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {!fieldState.invalid && fieldErrors.owner && (
+                    <FieldError>{fieldErrors.owner}</FieldError>
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              name="closeDate"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Close Date</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    type="date"
+                    aria-invalid={fieldState.invalid}
+                    disabled={pendingFields.has("closeDate")}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      clearFieldError("closeDate");
+                    }}
+                    onBlur={() => {
+                      field.onBlur();
+                      if (!fieldState.invalid) void commitField("closeDate", field.value);
+                    }}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {!fieldState.invalid && fieldErrors.closeDate && (
+                    <FieldError>{fieldErrors.closeDate}</FieldError>
+                  )}
                 </Field>
               )}
             />
