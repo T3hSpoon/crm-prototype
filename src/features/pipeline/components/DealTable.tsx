@@ -1,3 +1,4 @@
+import { Fragment, useState } from "react";
 import { flexRender } from "@tanstack/react-table";
 // TanStack Table v9.2.3 replaced the v8 useReactTable/createColumnHelper API
 // with a new features-based useTable hook (see @tanstack/react-table's
@@ -9,10 +10,14 @@ import { flexRender } from "@tanstack/react-table";
 // getGroupedRowModel/getSortedRowModel/getFilteredRowModel, matching the
 // plan's acceptance criteria and its "getCoreRowModel() only" intent.
 import { getCoreRowModel, legacyCreateColumnHelper, useLegacyTable } from "@tanstack/react-table/legacy";
+import { ChevronRight } from "lucide-react";
 import { StageSelect } from "@/features/pipeline/components/StageSelect";
 import { EditableCell } from "@/features/pipeline/components/EditableCell";
+import { LineItemsTable } from "@/features/pipeline/components/LineItemsTable";
 import type { Deal } from "@/shared/types/deal";
 import { toPipelineGroup } from "@/shared/utils/pipeline-group";
+import { hasManualOverride } from "@/shared/utils/line-items";
+import { cn } from "@/lib/utils";
 
 const columnHelper = legacyCreateColumnHelper<Deal>();
 
@@ -66,9 +71,47 @@ interface DealTableProps {
  * usePipelineGroups / 01-RESEARCH.md Pattern 1).
  */
 export function DealTable({ deals, onRowClick }: DealTableProps) {
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (dealId: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(dealId)) {
+        next.delete(dealId);
+      } else {
+        next.add(dealId);
+      }
+      return next;
+    });
+  };
+
+  const expandColumn = columnHelper.display({
+    id: "expand",
+    header: () => null,
+    cell: (info) => {
+      const dealId = info.row.original.id;
+      const isExpanded = expandedIds.has(dealId);
+      return (
+        <button
+          type="button"
+          aria-label={isExpanded ? "Collapse line items" : "Expand line items"}
+          aria-expanded={isExpanded}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleExpanded(dealId);
+          }}
+        >
+          <ChevronRight className={cn("size-4 transition-transform", isExpanded && "rotate-90")} />
+        </button>
+      );
+    },
+  });
+
+  const tableColumns = [expandColumn, ...columns];
+
   const table = useLegacyTable({
     data: deals,
-    columns,
+    columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
   });
 
@@ -92,7 +135,7 @@ export function DealTable({ deals, onRowClick }: DealTableProps) {
           {deals.length === 0 ? (
             <tr>
               <td
-                colSpan={columns.length}
+                colSpan={tableColumns.length}
                 className="px-4 py-6 text-center text-muted-foreground"
               >
                 No deals in this group yet.
@@ -100,17 +143,30 @@ export function DealTable({ deals, onRowClick }: DealTableProps) {
             </tr>
           ) : (
             table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className="cursor-pointer border-t border-border"
-                onClick={() => onRowClick(row.original.id)}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-2">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
+              <Fragment key={row.id}>
+                <tr
+                  className="cursor-pointer border-t border-border"
+                  onClick={() => onRowClick(row.original.id)}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className="px-4 py-2">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+                {expandedIds.has(row.original.id) && (
+                  <tr className="border-t border-border bg-muted/20">
+                    <td colSpan={tableColumns.length} className="px-4 py-3">
+                      <LineItemsTable
+                        dealId={row.original.id}
+                        lineItems={row.original.lineItems}
+                        value={row.original.value}
+                        overridden={hasManualOverride(row.original)}
+                      />
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
             ))
           )}
         </tbody>

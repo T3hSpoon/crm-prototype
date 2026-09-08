@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -63,6 +64,10 @@ export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTable
   // 02-01's EditableCell/DealDetailDrawer pattern).
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Never stored — always freshly derived every render (DEAL-05), mirroring
+  // the removed drawer's own computation. Uses the last-committed `lineItems`
+  // prop, not the form's live in-progress draft.
+  const computed = sumLineItems(lineItems);
 
   const form = useForm<LineItemsFormInput, unknown, LineItemsFormValues>({
     resolver: zodResolver(lineItemsSchema),
@@ -128,6 +133,11 @@ export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTable
     if (isPending) return;
     remove(index);
     void commitLineItems();
+  };
+
+  const handleResetToSum = () => {
+    if (isPending) return;
+    void usePipelineStore.getState().updateDeal(dealId, { value: computed });
   };
 
   return (
@@ -315,10 +325,22 @@ export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTable
           </tbody>
         </table>
       </div>
-      <div>
+      <div className="flex items-center gap-2">
         <Button type="button" variant="outline" size="sm" disabled={isPending} onClick={handleAdd}>
           Add Line Item
         </Button>
+        {overridden && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={isPending}
+            onClick={handleResetToSum}
+          >
+            <RotateCcw data-icon="inline-start" />
+            Reset to sum ({currencyFormatter.format(computed)})
+          </Button>
+        )}
       </div>
       {error && (
         <p role="alert" className="text-sm text-destructive">
