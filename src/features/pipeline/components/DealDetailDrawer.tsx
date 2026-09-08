@@ -204,7 +204,11 @@ export function DealDetailDrawer({ open, onOpenChange, dealId }: DealDetailDrawe
                       variant="outline"
                       size="sm"
                       className="w-fit"
-                      onClick={() => void usePipelineStore.getState().updateDeal(dealId, { value: computed })}
+                      disabled={pendingFields.has("value")}
+                      onClick={() => {
+                        form.setValue("value", computed);
+                        void commitField("value", computed);
+                      }}
                     >
                       <RotateCcw data-icon="inline-start" />
                       Reset to sum ({currencyFormatter.format(computed)})
