@@ -9,6 +9,10 @@ interface PipelineState {
   load: () => Promise<void>;
   addDeal: (input: NewDealInput) => Promise<void>;
   moveStage: (dealId: string, group: PipelineGroup) => Promise<void>;
+  updateDeal: (
+    id: string,
+    patch: Partial<Pick<Deal, "name" | "value" | "owner" | "closeDate" | "lineItems">>,
+  ) => Promise<void>;
 }
 
 /**
@@ -38,5 +42,19 @@ export const usePipelineStore = create<PipelineState>()((set, get) => ({
     const updated = await dealsRepository.update(dealId, patch);
     // Replace by id, never by array index (research/PITFALLS.md Pitfall 5).
     set({ deals: get().deals.map((d) => (d.id === dealId ? updated : d)) });
+  },
+
+  updateDeal: async (id, patch) => {
+    try {
+      const updated = await dealsRepository.update(id, patch);
+      // Replace by id, never by array index (research/PITFALLS.md Pitfall 5).
+      set({ deals: get().deals.map((d) => (d.id === id ? updated : d)) });
+    } catch (err) {
+      // Carried-forward fix for 01-REVIEW.md WR-01: log and re-throw so the
+      // calling UI component's own catch can revert local state and show its
+      // error banner — never swallow the rejection silently.
+      console.error("updateDeal failed", err);
+      throw err;
+    }
   },
 }));

@@ -13,6 +13,11 @@ export interface DealsRepository {
   create(input: NewDealInput): Promise<Deal>;
   update(
     id: string,
-    patch: Partial<Pick<Deal, "pipelineStage" | "outcome" | "lostReason">>,
+    patch: Partial<
+      Pick<
+        Deal,
+        "pipelineStage" | "outcome" | "lostReason" | "name" | "value" | "owner" | "closeDate" | "lineItems"
+      >
+    >,
   ): Promise<Deal>;
 }

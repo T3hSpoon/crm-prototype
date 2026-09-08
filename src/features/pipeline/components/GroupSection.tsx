@@ -55,6 +55,7 @@ const GROUP_META: Record<
 interface GroupSectionProps {
   group: PipelineGroup;
   deals: Deal[];
+  onRowClick: (dealId: string) => void;
 }
 
 /**
@@ -62,7 +63,7 @@ interface GroupSectionProps {
  * DealTable. The header always renders, regardless of whether `deals` is
  * empty — a group never disappears just because it currently has 0 deals.
  */
-export function GroupSection({ group, deals }: GroupSectionProps) {
+export function GroupSection({ group, deals, onRowClick }: GroupSectionProps) {
   const meta = GROUP_META[group];
   const Icon = meta.icon;
   const total = deals.reduce((sum, d) => sum + d.value, 0);
@@ -87,7 +88,7 @@ export function GroupSection({ group, deals }: GroupSectionProps) {
         </span>
       </header>
       <div className="p-3">
-        <DealTable deals={deals} />
+        <DealTable deals={deals} onRowClick={onRowClick} />
       </div>
     </section>
   );

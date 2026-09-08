@@ -20,6 +20,9 @@ function buildSeedDeal(): Deal {
     pipelineStage,
     outcome: isLost ? "lost" : "open",
     createdAt: faker.date.recent({ days: 60 }).toISOString(),
+    // Populating realistic line items is plan 02-02's job — every seed deal
+    // starts empty here.
+    lineItems: [],
   };
 }
 

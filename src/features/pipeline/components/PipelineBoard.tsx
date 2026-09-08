@@ -2,6 +2,7 @@ import { useState } from "react";
 import { GROUPS, usePipelineGroups } from "@/features/pipeline/hooks/usePipelineGroups";
 import { GroupSection } from "@/features/pipeline/components/GroupSection";
 import { AddDealDialog } from "@/features/pipeline/components/AddDealDialog";
+import { DealDetailDrawer } from "@/features/pipeline/components/DealDetailDrawer";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 export function PipelineBoard() {
   const groups = usePipelineGroups();
   const [isAddDealOpen, setIsAddDealOpen] = useState(false);
+  const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-8">
@@ -23,9 +25,21 @@ export function PipelineBoard() {
         <Button onClick={() => setIsAddDealOpen(true)}>Add Deal</Button>
       </div>
       {GROUPS.map((group) => (
-        <GroupSection key={group} group={group} deals={groups[group]} />
+        <GroupSection
+          key={group}
+          group={group}
+          deals={groups[group]}
+          onRowClick={setSelectedDealId}
+        />
       ))}
       <AddDealDialog open={isAddDealOpen} onOpenChange={setIsAddDealOpen} />
+      <DealDetailDrawer
+        open={selectedDealId !== null}
+        onOpenChange={(next) => {
+          if (!next) setSelectedDealId(null);
+        }}
+        dealId={selectedDealId}
+      />
     </div>
   );
 }

@@ -51,6 +51,7 @@ const columns = [
 
 interface DealTableProps {
   deals: Deal[];
+  onRowClick: (dealId: string) => void;
 }
 
 /**
@@ -60,7 +61,7 @@ interface DealTableProps {
  * GroupSection already owns its own pre-partitioned `deals` slice (see
  * usePipelineGroups / 01-RESEARCH.md Pattern 1).
  */
-export function DealTable({ deals }: DealTableProps) {
+export function DealTable({ deals, onRowClick }: DealTableProps) {
   const table = useLegacyTable({
     data: deals,
     columns,
@@ -95,7 +96,11 @@ export function DealTable({ deals }: DealTableProps) {
             </tr>
           ) : (
             table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="border-t border-border">
+              <tr
+                key={row.id}
+                className="cursor-pointer border-t border-border"
+                onClick={() => onRowClick(row.original.id)}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="px-4 py-2">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

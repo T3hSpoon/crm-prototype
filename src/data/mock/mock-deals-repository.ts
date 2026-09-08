@@ -35,6 +35,9 @@ export class MockDealsRepository implements DealsRepository {
       pipelineStage,
       outcome,
       createdAt: new Date().toISOString(),
+      // New deals start with no line items — DEAL-04's line-items UI (plan
+      // 02-02) adds them after creation, not via the Add Deal form.
+      lineItems: [],
     };
     this.deals.push(deal);
     return Promise.resolve(deal);
@@ -42,7 +45,12 @@ export class MockDealsRepository implements DealsRepository {
 
   update(
     id: string,
-    patch: Partial<Pick<Deal, "pipelineStage" | "outcome" | "lostReason">>,
+    patch: Partial<
+      Pick<
+        Deal,
+        "pipelineStage" | "outcome" | "lostReason" | "name" | "value" | "owner" | "closeDate" | "lineItems"
+      >
+    >,
   ): Promise<Deal> {
     // Find by stable id, never by array index (research/PITFALLS.md Pitfall 5)
     // — array index breaks the moment deals are grouped/filtered/reordered.

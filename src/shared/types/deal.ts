@@ -20,6 +20,24 @@ export type DealOutcome = "open" | "won" | "lost";
  */
 export type PipelineGroup = "prospect" | "lead" | "opportunity" | "deal" | "lost";
 
+/** Whether a deal's line item is a product or a service. */
+export type LineItemType = "product" | "service";
+
+/**
+ * A single product/service line item on a Deal (Phase 2, DEAL-04). A
+ * subtotal is intentionally NOT a field here — always derived from
+ * `units * unitPrice` via `computeSubtotal` in `shared/utils/line-items.ts`,
+ * mirroring the `PipelineGroup` "never stored directly" convention above.
+ */
+export interface LineItem {
+  id: string;
+  productOrService: string;
+  sku: string;
+  units: number;
+  unitPrice: number;
+  type: LineItemType;
+}
+
 export interface Deal {
   id: string;
   name: string;
@@ -34,6 +52,8 @@ export interface Deal {
   lostReason?: string;
   /** ISO 8601 */
   createdAt: string;
+  /** Product/service composition (Phase 2, DEAL-04). Starts empty at creation. */
+  lineItems: LineItem[];
 }
 
 /**
