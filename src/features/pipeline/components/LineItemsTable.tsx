@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,10 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
   maximumFractionDigits: 0,
 });
+
+/** Copywriting Contract "Error state" row, 02-UI-SPEC.md — same text used by
+ * the drawer's core fields and EditableCell. */
+const UPDATE_FAILED_MESSAGE = "Update failed — your change wasn't saved. Try again.";
 
 const TYPE_OPTIONS: { value: LineItemType; label: string }[] = [
   { value: "product", label: "Product" },
@@ -55,9 +60,22 @@ interface LineItemsTableProps {
  * separate auto-tracking write.
  */
 export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTableProps) {
+  // One flag for the whole table — commitLineItems() always patches the
+  // entire array in a single call, so there is no meaningful per-row
+  // in-flight state (Pitfall 5 double-submit guard, carried forward from
+  // 02-01's EditableCell/DealDetailDrawer pattern).
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const form = useForm<LineItemsFormInput, unknown, LineItemsFormValues>({
     resolver: zodResolver(lineItemsSchema),
     values: { lineItems },
+    // Validate on blur — RHF's default "onSubmit" mode never runs the
+    // resolver until a submit happens, which this form never does (every
+    // commit is field-level, no submit button). Without this, a row's
+    // fieldState.invalid would stay permanently false and an invalid
+    // units/unitPrice value would silently commit.
+    mode: "onBlur",
   });
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -65,26 +83,39 @@ export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTable
   });
 
   const commitLineItems = async () => {
-    // form.getValues() returns the pre-coercion input shape (z.input — units/
-    // unitPrice are `unknown` prior to z.coerce.number() running); coerce
-    // explicitly here since we bypass handleSubmit's own coercion step.
-    const raw = form.getValues("lineItems");
-    const nextLineItems: LineItem[] = raw.map((item) => ({
-      id: item.id,
-      productOrService: item.productOrService,
-      sku: item.sku,
-      units: Number(item.units),
-      unitPrice: Number(item.unitPrice),
-      type: item.type,
-    }));
-    const patch: Partial<Pick<Deal, "lineItems" | "value">> = { lineItems: nextLineItems };
-    if (!overridden) {
-      patch.value = sumLineItems(nextLineItems);
+    if (isPending) return;
+    setIsPending(true);
+    try {
+      // form.getValues() returns the pre-coercion input shape (z.input —
+      // units/unitPrice are `unknown` prior to z.coerce.number() running);
+      // coerce explicitly here since we bypass handleSubmit's own coercion.
+      const raw = form.getValues("lineItems");
+      const nextLineItems: LineItem[] = raw.map((item) => ({
+        id: item.id,
+        productOrService: item.productOrService,
+        sku: item.sku,
+        units: Number(item.units),
+        unitPrice: Number(item.unitPrice),
+        type: item.type,
+      }));
+      const patch: Partial<Pick<Deal, "lineItems" | "value">> = { lineItems: nextLineItems };
+      if (!overridden) {
+        patch.value = sumLineItems(nextLineItems);
+      }
+      await usePipelineStore.getState().updateDeal(dealId, patch);
+      setError(null);
+    } catch {
+      // Revert every row to the deal's last-known-good line items (passed in
+      // via the `lineItems` prop) without closing the drawer.
+      form.reset({ lineItems });
+      setError(UPDATE_FAILED_MESSAGE);
+    } finally {
+      setIsPending(false);
     }
-    await usePipelineStore.getState().updateDeal(dealId, patch);
   };
 
   const handleAdd = () => {
+    if (isPending) return;
     append({
       id: crypto.randomUUID(),
       productOrService: "",
@@ -97,6 +128,7 @@ export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTable
   };
 
   const handleRemove = (index: number) => {
+    if (isPending) return;
     remove(index);
     void commitLineItems();
   };
@@ -146,6 +178,7 @@ export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTable
                               className="truncate"
                               title={rhfField.value}
                               aria-invalid={fieldState.invalid}
+                              disabled={isPending}
                               onBlur={() => {
                                 rhfField.onBlur();
                                 if (!fieldState.invalid) void commitLineItems();
@@ -167,6 +200,7 @@ export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTable
                               className="truncate"
                               title={rhfField.value}
                               aria-invalid={fieldState.invalid}
+                              disabled={isPending}
                               onBlur={() => {
                                 rhfField.onBlur();
                                 if (!fieldState.invalid) void commitLineItems();
@@ -184,6 +218,7 @@ export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTable
                         render={({ field: rhfField }) => (
                           <Select
                             value={rhfField.value}
+                            disabled={isPending}
                             onValueChange={(next) => {
                               rhfField.onChange(next);
                               void commitLineItems();
@@ -217,9 +252,16 @@ export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTable
                               step="any"
                               className="w-20"
                               aria-invalid={fieldState.invalid}
+                              disabled={isPending}
                               onBlur={() => {
                                 rhfField.onBlur();
-                                if (!fieldState.invalid) void commitLineItems();
+                                // Await the resolver directly rather than
+                                // reading fieldState.invalid synchronously —
+                                // the render-closure value is stale until the
+                                // validation triggered by onBlur() resolves.
+                                void form
+                                  .trigger(`lineItems.${index}.units`)
+                                  .then((valid) => valid && commitLineItems());
                               }}
                             />
                             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -241,9 +283,12 @@ export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTable
                               step="any"
                               className="w-24"
                               aria-invalid={fieldState.invalid}
+                              disabled={isPending}
                               onBlur={() => {
                                 rhfField.onBlur();
-                                if (!fieldState.invalid) void commitLineItems();
+                                void form
+                                  .trigger(`lineItems.${index}.unitPrice`)
+                                  .then((valid) => valid && commitLineItems());
                               }}
                             />
                             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -260,6 +305,7 @@ export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTable
                         variant="ghost"
                         size="icon-sm"
                         aria-label="Remove line item"
+                        disabled={isPending}
                         onClick={() => handleRemove(index)}
                       >
                         &times;
@@ -273,10 +319,15 @@ export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTable
         </table>
       </div>
       <div>
-        <Button type="button" variant="outline" size="sm" onClick={handleAdd}>
+        <Button type="button" variant="outline" size="sm" disabled={isPending} onClick={handleAdd}>
           Add Line Item
         </Button>
       </div>
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
