@@ -9,36 +9,40 @@ import { flexRender } from "@tanstack/react-table";
 // getGroupedRowModel/getSortedRowModel/getFilteredRowModel, matching the
 // plan's acceptance criteria and its "getCoreRowModel() only" intent.
 import { getCoreRowModel, legacyCreateColumnHelper, useLegacyTable } from "@tanstack/react-table/legacy";
-import { format, parseISO } from "date-fns";
 import { StageSelect } from "@/features/pipeline/components/StageSelect";
+import { EditableCell } from "@/features/pipeline/components/EditableCell";
 import type { Deal } from "@/shared/types/deal";
 import { toPipelineGroup } from "@/shared/utils/pipeline-group";
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
 
 const columnHelper = legacyCreateColumnHelper<Deal>();
 
 const columns = [
   columnHelper.accessor("name", {
     header: "Name",
+    cell: (info) => (
+      <EditableCell dealId={info.row.original.id} columnId="name" value={info.getValue()} />
+    ),
   }),
   columnHelper.accessor("company", {
     header: "Company",
   }),
   columnHelper.accessor("value", {
     header: "Value",
-    cell: (info) => currencyFormatter.format(info.getValue()),
+    cell: (info) => (
+      <EditableCell dealId={info.row.original.id} columnId="value" value={info.getValue()} />
+    ),
   }),
   columnHelper.accessor("owner", {
     header: "Owner",
+    cell: (info) => (
+      <EditableCell dealId={info.row.original.id} columnId="owner" value={info.getValue()} />
+    ),
   }),
   columnHelper.accessor("closeDate", {
     header: "Close Date",
-    cell: (info) => format(parseISO(info.getValue()), "MMM d, yyyy"),
+    cell: (info) => (
+      <EditableCell dealId={info.row.original.id} columnId="closeDate" value={info.getValue()} />
+    ),
   }),
   columnHelper.display({
     id: "stage",

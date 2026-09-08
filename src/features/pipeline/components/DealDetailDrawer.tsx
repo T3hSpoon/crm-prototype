@@ -58,7 +58,10 @@ export function DealDetailDrawer({ open, onOpenChange, dealId }: DealDetailDrawe
       name: deal?.name ?? "",
       value: deal?.value ?? 0,
       owner: deal?.owner ?? "",
-      closeDate: deal?.closeDate ?? "",
+      // Native <input type="date"> requires exactly "YYYY-MM-DD"; seed data
+      // stores a full ISO datetime (faker's toISOString()), so slice to the
+      // date portion — a no-op for already-date-only strings.
+      closeDate: deal?.closeDate ? deal.closeDate.slice(0, 10) : "",
     },
   });
 
@@ -81,7 +84,10 @@ export function DealDetailDrawer({ open, onOpenChange, dealId }: DealDetailDrawe
       // Revert to the deal's last-known value, read fresh from the store —
       // the store's own state is the source of truth, not this local form.
       const fresh = usePipelineStore.getState().deals.find((d) => d.id === dealId);
-      if (fresh) form.setValue(name, fresh[name] as DealEditFormInput[EditableField]);
+      if (fresh) {
+        const revertValue = name === "closeDate" ? fresh.closeDate.slice(0, 10) : fresh[name];
+        form.setValue(name, revertValue as DealEditFormInput[EditableField]);
+      }
       setFieldErrors((prev) => ({ ...prev, [name]: UPDATE_FAILED_MESSAGE }));
     } finally {
       setPendingFields((prev) => {
