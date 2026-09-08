@@ -56,6 +56,13 @@ const columns = [
       <StageSelect dealId={info.row.original.id} currentGroup={toPipelineGroup(info.row.original)} />
     ),
   }),
+  columnHelper.display({
+    id: "id",
+    header: "ID",
+    cell: (info) => (
+      <span className="text-xs font-mono text-muted-foreground">{info.row.original.id}</span>
+    ),
+  }),
 ];
 
 interface DealTableProps {
