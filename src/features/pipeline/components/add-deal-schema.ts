@@ -30,8 +30,14 @@ export const addDealStep1Schema = z.object({
  */
 export const addDealStep2Schema = z.object({
   prorata: z.enum(["yes", "no"], { message: "Prorata is required" }),
-  gracePeriodDays: z.coerce.number().nonnegative("Grace period is required"),
-  contractTermMonths: z.coerce.number().nonnegative("Contract term is required"),
+  gracePeriodDays: z.coerce
+    .number()
+    .nonnegative("Grace period is required")
+    .max(3650, "Grace period must be 3650 days or fewer"),
+  contractTermMonths: z.coerce
+    .number()
+    .nonnegative("Contract term is required")
+    .max(600, "Contract term must be 600 months or fewer"),
   frequency: z.enum(["monthly", "quarterly", "quadrimestral", "semi-annual", "annually"], {
     message: "Frequency is required",
   }),

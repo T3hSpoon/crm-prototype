@@ -328,12 +328,20 @@ export function AddDealDialog({ open, onOpenChange }: AddDealDialogProps) {
           )}
           <DialogFooter>
             {step === 1 && (
-              <Button type="button" onClick={handleNext}>
-                Next
-              </Button>
+              <>
+                <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+                  Cancel Add Deal
+                </Button>
+                <Button type="button" onClick={handleNext}>
+                  Next
+                </Button>
+              </>
             )}
             {step === 2 && (
               <>
+                <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+                  Cancel Add Deal
+                </Button>
                 <Button type="button" variant="outline" onClick={() => setStep(1)}>
                   Back
                 </Button>
