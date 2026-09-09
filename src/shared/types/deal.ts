@@ -23,6 +23,12 @@ export type PipelineGroup = "prospect" | "lead" | "opportunity" | "deal" | "lost
 /** Whether a deal's line item is a product or a service. */
 export type LineItemType = "product" | "service";
 
+/** Billing cadence for a deal's contract terms (Phase 3, DEAL-06). */
+export type DealFrequency = "monthly" | "quarterly" | "quadrimestral" | "semi-annual" | "annually";
+
+/** Contract currency for a deal's deal-terms fields (Phase 3, DEAL-06). */
+export type DealCurrency = "USD" | "EUR" | "GBP";
+
 /**
  * A single product/service line item on a Deal (Phase 2, DEAL-04). A
  * subtotal is intentionally NOT a field here — always derived from
@@ -54,6 +60,12 @@ export interface Deal {
   createdAt: string;
   /** Product/service composition (Phase 2, DEAL-04). Starts empty at creation. */
   lineItems: LineItem[];
+  /** Deal-terms fields captured via the Add Deal wizard's step 2 (Phase 3, DEAL-06). */
+  prorata: boolean;
+  gracePeriodDays: number;
+  contractTermMonths: number;
+  frequency: DealFrequency;
+  currency: DealCurrency;
 }
 
 /**
@@ -68,4 +80,10 @@ export interface NewDealInput {
   owner: string;
   closeDate: string;
   group: PipelineGroup;
+  /** Deal-terms fields captured via the Add Deal wizard's step 2 (Phase 3, DEAL-06). */
+  prorata: boolean;
+  gracePeriodDays: number;
+  contractTermMonths: number;
+  frequency: DealFrequency;
+  currency: DealCurrency;
 }
