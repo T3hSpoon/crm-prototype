@@ -15,11 +15,12 @@ A working, demoable pipeline view — prospects flow through stages, lost deals 
 - ✓ Grouped table view with pipeline stage groups: Prospect, Lead, Opportunity, Deal (Won), Lost — Phase 1
 - ✓ User can add a new prospect/deal via a form — Phase 1
 - ✓ User can move a deal between pipeline stages — Phase 1
+- ✓ User can edit deal details inline (fields and line items) — Phase 2
+- ✓ Each deal supports line items (subitems): product/service, SKU, units, unit price, subtotal, type — Phase 2
 
 ### Active
 
-- [ ] User can edit deal details inline (fields and line items)
-- [ ] Each deal supports line items (subitems): product/service, SKU, units, unit price, subtotal, type
+- [ ] User can capture deal-terms/contract fields (Prorata, Grace Period, Contract Term, Frequency, Currency) via a 2-step Add Deal wizard, for every new deal at creation
 - [ ] User can mark a deal as lost, capture a reason, and it moves to a separate Lost group
 - [ ] Won deals are listed as the "contracts made so far" view (no separate contract entity)
 - [ ] Forecast page showing pipeline value, win rate, and projected revenue, derived from mock data
@@ -53,13 +54,18 @@ A working, demoable pipeline view — prospects flow through stages, lost deals 
 | Mock/seed data only, no persistence | Backend/API is explicitly deferred to post-integration work | Shipped Phase 1 — `DealsRepository` interface + `MockDealsRepository`, swap-ready seam, zero network calls |
 | Own visual design, monday.com concepts only | Avoid a close visual clone; reuse pipeline/groups/subitems concepts | Shipped Phase 1 — tinted cards, left accent bars, per-group icons, original 5-hue palette; human-confirmed distinct in UAT |
 | React as frontend stack | Improves odds of a clean merge into the existing iDrive project later | Shipped Phase 1 — Vite 8 + React 19.2 + TypeScript 5.9.3, builds and runs cleanly |
-| Line items (subitems) per deal | Needed to capture product/service composition, mirroring the monday.com reference | — Pending (Phase 2) |
-| Lost deals tracked in a separate group with a reason field | User wants to see what fell through and why | Partially shipped Phase 1 — Lost is a live board group; the required-reason gate is deferred to Phase 3 by design |
-| Won deals double as the "contracts made" list | No separate contract entity needed — a closed-won deal is the contract | — Pending (Phase 3) |
+| Line items (subitems) per deal | Needed to capture product/service composition, mirroring the monday.com reference | Shipped Phase 2 — `LineItemsTable` (add/edit/remove), value auto-tracks the sum via `sumLineItems`/`hasManualOverride` with a manual-override + reset-to-sum path, positive-value validation on units/unitPrice |
+| Lost deals tracked in a separate group with a reason field | User wants to see what fell through and why | Partially shipped Phase 1 — Lost is a live board group; the required-reason gate is deferred to Phase 3.1 by design |
+| Won deals double as the "contracts made" list | No separate contract entity needed — a closed-won deal is the contract | — Pending (Phase 3.1) |
+| Deal-terms/contract fields (Prorata, Grace Period, Contract Term, Frequency, Currency) captured on every new deal, at creation | User wants this data captured up front for later contract/quote template generation, regardless of pipeline stage | — Pending (Phase 3, inserted this session ahead of the original Lost & Won scope, which moved to Phase 3.1) |
 | Forecast page included in v1 | User wants evaluation/forecast analysis available now, not deferred to v2 | — Pending (Phase 4) |
 | No authentication in prototype | Single-user scope for this phase | Confirmed Phase 1 — no auth code exists anywhere in the codebase |
 | TypeScript pinned to 5.9.3, not 7.0.2 | `typescript-eslint@8.68.0`'s peer range (`<6.1.0`) is incompatible with TS 7's native compiler | Shipped Phase 1 |
 | Stage moves via a per-row dropdown, not drag-and-drop, in Phase 1 | Ship the simpler mechanism first; `@dnd-kit` packages are installed but reserved for a same-`moveStage`-action Phase 2+ fast-follow | Shipped Phase 1 |
+| Deal detail interaction model: chevron-expandable sub-row, not a drawer | User-directed pivot after Phase 2's initial execution — inline table editing already covered all 4 core fields, leaving line items as the drawer's only unique job, so it moved to a chevron-toggle sub-row (closer to the tech stack's originally-recommended `getSubRows`-style pattern); the drawer (`DealDetailDrawer.tsx`, `sheet.tsx`) was removed entirely | Shipped Phase 2 (quick task 260908-f9d) |
+| Pipeline board widened to ~95% of viewport width | User wants more horizontal room now that rows carry a chevron + ID column alongside the original 5 fields | Shipped Phase 2 (quick task 260908-f9d) |
+| Deal IDs display as 10-digit numeric strings, not UUIDs | User-requested display/format preference; a "Deal ID" column was also added as the last table column | Shipped Phase 2 (quick tasks 260908-i18, 260908-i6f) |
+| Standalone Vercel deployment for demo purposes | User wants to showcase the prototype before the eventual merge into the existing iDrive project | Shipped Phase 2 (quick task 260909-dig, `vercel.json`) — live at https://eld-dusky.vercel.app |
 
 ## Evolution
 
@@ -79,4 +85,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-09-07 after Phase 1*
+*Last updated: 2026-09-09 after Phase 2*

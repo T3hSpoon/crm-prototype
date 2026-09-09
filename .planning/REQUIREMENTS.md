@@ -23,11 +23,16 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DEAL-03**: User can open a deal detail drawer/panel to view and edit its full details
 - [x] **DEAL-04**: User can add, edit, and remove line items on a deal (product/service, SKU, units, unit price, subtotal, type)
 - [x] **DEAL-05**: A deal's total value defaults to the sum of its line items, with the option to manually override it
+- [ ] **DEAL-06**: User can capture deal-terms/contract fields (Prorata, Grace Period, Contract Term, Frequency, Currency) via a 2-step Add Deal wizard, required for every new deal at creation, regardless of pipeline stage
 
 ### Lost Tracking
 
 - [ ] **LOST-01**: User can mark a deal as lost, which requires selecting or entering a reason before the move completes
 - [ ] **LOST-02**: A lost deal moves to a separate Lost group, distinct from active pipeline stages
+
+### Won Tracking
+
+- [ ] **WON-01**: Marking a deal as Won requires completing a contract terms form (start date, end date/term length, signed date, payment terms, final contract value) before the deal is added to the contracts list
 
 ### Forecast
 
@@ -70,7 +75,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | PIPE-01 | Phase 1 | Complete |
 | PIPE-02 | Phase 1 | Complete |
-| PIPE-03 | Phase 3 | Pending |
+| PIPE-03 | Phase 3.1 | Pending |
 | PIPE-04 | Phase 4 | Pending |
 | PIPE-05 | Phase 4 | Pending |
 | PIPE-06 | Phase 4 | Pending |
@@ -79,17 +84,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEAL-03 | Phase 2 | Complete |
 | DEAL-04 | Phase 2 | Complete |
 | DEAL-05 | Phase 2 | Complete |
-| LOST-01 | Phase 3 | Pending |
-| LOST-02 | Phase 3 | Pending |
+| DEAL-06 | Phase 3 | Pending |
+| LOST-01 | Phase 3.1 | Pending |
+| LOST-02 | Phase 3.1 | Pending |
+| WON-01 | Phase 3.1 | Pending |
 | FCST-01 | Phase 4 | Pending |
 | FCST-02 | Phase 4 | Pending |
 
 **Coverage:**
 
-- v1 requirements: 15 total
-- Mapped to phases: 15
+- v1 requirements: 17 total
+- Mapped to phases: 17
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-08-28*
-*Last updated: 2026-08-28 after roadmap creation*
+*Last updated: 2026-09-09 — Phase 3 redirected to deal-terms wizard (DEAL-06); PIPE-03/LOST-01/LOST-02/WON-01 moved to inserted Phase 3.1*

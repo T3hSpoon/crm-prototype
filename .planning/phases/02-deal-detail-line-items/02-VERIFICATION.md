@@ -1,53 +1,65 @@
 ---
 phase: 02-deal-detail-line-items
 verified: 2026-09-08T00:00:00Z
-status: human_needed
+status: passed
 score: 27/41 must-haves verified (code-inspection), 4 roadmap success criteria present+wired but interactively unverified
 behavior_unverified: 5 # T-02-01-08 (drawer close-while-commit cancellation invariant) + all 4 ROADMAP success criteria (user-flow completion never run in a browser this session)
 overrides_applied: 0
 mvp_mode_note: "ROADMAP.md marks Phase 2 mode: mvp, but the Goal line ('Users can manage a deal's full details...') is not written in strict 'As a X, I want Y, so that Z.' form (gsd_run query user-story.validate --pick valid returned false). 02-01-PLAN.md's own objective flags this and derives a phase-level user story for MVP framing only, recommending /gsd-mvp-phase 2 to formalize it. Per this task's explicit instruction to check the 4 ROADMAP Success Criteria as the must-be-true contract, this report proceeds with standard goal-backward verification against those 4 criteria rather than refusing outright — but the format gap itself is flagged here for the record."
 gaps: [] # No FAILED must-haves — see Anti-Patterns and Code Review sections; the one Critical + two Warning issues found by 02-REVIEW.md are confirmed fixed and present in the current code (commits 16caad6, 0716190, 3eabd6b)
 behavior_unverified_items:
+
   - truth: "Closing the drawer, or switching it to a different deal, while a field commit is still in flight does not lose or cancel that commit (DEAL-03 concurrency, 02-01 must_haves)"
     test: "Open a deal's drawer, edit a field (e.g. Owner), and immediately (before the commit settles — throttle network in devtools or use React DevTools to slow the mock repo) close the drawer or click a different deal's row"
     expected: "The edit still lands in the store — reopening the drawer (or checking the pipeline table) shows the committed value, not the pre-edit value"
     why_human: "This is a cancellation/ordering invariant. Code inspection shows `commitField` calls `usePipelineStore.getState().updateDeal()` (not local drawer state) and the promise chain doesn't depend on component mount, which is architecturally consistent with the claim — but no test exercises it, and the mock repository resolves near-instantly, making the race hard to trigger deterministically even manually."
+
   - truth: "User can open a deal detail drawer/panel to view its full information (ROADMAP SC1 / DEAL-03)"
     test: "Run the dev server. Click anywhere on a deal's row. Confirm a drawer slides in from the right showing that deal's name, company, and current stage."
     expected: "Drawer opens showing the clicked deal's real data (not another deal's, not stale data)."
     why_human: "Static wiring is fully traced (DealTable onClick -> GroupSection -> PipelineBoard.selectedDealId -> DealDetailDrawer open/dealId props) and structurally sound, but the interactive click-through was never run this session (SUMMARY.md/WINDOWS.md unrun-verify items 1-2). A prior Critical bug (CR-01, now fixed) in this exact phase crashed the app at runtime while `npm run build` still passed clean — direct evidence that a clean build is not sufficient proof of correct runtime behavior for this phase's UI surface."
+
   - truth: "User can edit a deal's core fields inline (name, value, owner, close date) without leaving the pipeline view (ROADMAP SC2 / DEAL-02)"
     test: "In the drawer, edit each of Name/Value/Owner/Close Date in turn and blur — confirm each commits independently. In the pipeline table, click into each of the same 4 columns, edit, and blur/Enter — confirm it commits and the drawer does NOT open as a side effect. Try clearing Close Date to empty and blurring — confirm an inline error appears and nothing crashes."
     expected: "All 8 write paths (4 fields x drawer/table) commit correctly with guard/revert/validation behavior; no crash on the specific CR-01 empty-Close-Date case."
     why_human: "Same rationale as SC1 — code inspection confirms `EditableCell` now imports and applies `dealEditSchema.shape[columnId].safeParse()` before committing (the CR-01 fix), and the crash-prone `format(parseISO(...))` call is now guarded (`value ? format(...) : \"—\"`), but this was verified by the fixer only via 'Tier 1' re-read (no `tsc`/build/browser check in that worktree) and has not been exercised interactively since."
+
   - truth: "User can add, edit, and remove line items on a deal (ROADMAP SC3 / DEAL-04)"
     test: "Open a deal's drawer, click 'Add Line Item', fill in product/units/price, confirm the subtotal updates live, blur each field, remove the row."
     expected: "Row appends/persists/removes correctly; subtotal reflects units*unitPrice live; entering 0 in units/unitPrice shows inline validation and does not commit."
     why_human: "Wiring (`useFieldArray`, `commitLineItems()` reading full form state, `form.trigger()`-gated validation) is structurally sound and two Rule-1 bugs were already found and fixed in this exact file this phase (coercion bug, stale-fieldState validation bug) — both by build-time discovery, not runtime testing, meaning further runtime-only bugs cannot be ruled out by inspection alone."
+
   - truth: "A deal's total value defaults to the sum of its line items, with the option to manually override it (ROADMAP SC4 / DEAL-05)"
     test: "Open a seeded deal with line items — confirm Value shows the computed sum with no reset control. Edit Value to a different number — confirm 'Reset to sum' appears. Add a line item while overridden — confirm Value does NOT silently snap back. Click 'Reset to sum' — confirm Value returns to the sum and the control disappears."
     expected: "Auto-tracking, override-detection, and reset-to-sum all behave per DEAL-05; the reset-to-sum affordance is never suppressed while overridden (the plan's flagged, unresolved prohibition)."
     why_human: "`hasManualOverride`/`sumLineItems`/`round2` are pure and their logic is verified correct by direct code reading, but the end-to-end show/hide/reset UI behavior and the flagged transparency prohibition were never exercised in a browser this session."
 coincidental_reliance_items: []
 human_verification:
+
   - test: "Click a deal row -> drawer opens with correct name/company/stage; edit Name and blur -> drawer stays open, title updates."
     expected: "Drawer opens with the clicked deal's data; name commits and drawer does not auto-close."
     why_human: "Interactive click-through not run this session (WINDOWS.md items 1-2); harvested from 02-01-PLAN.md Task 1 human-check."
+
   - test: "In the drawer, edit Value/Owner/Close Date in turn (including clearing Close Date to empty) -> confirm independent commit, guard-while-pending, and no crash on the CR-01 case. From the pipeline table, click a row's Stage Select dropdown -> confirm it moves stage and does NOT also open the drawer."
     expected: "All four core fields commit independently with validation blocking invalid input; StageSelect no longer opens the drawer."
     why_human: "Harvested from 02-01-PLAN.md Task 2 human-check; also directly covers the CR-01 crash scenario the code reviewer found (fixed, but not re-tested interactively)."
+
   - test: "In the pipeline table, click into the Value cell of any row -> edit -> blur -> confirm table updates and the drawer does NOT open as a side effect. Repeat for Name/Owner/Close Date."
     expected: "EditableCell commits inline without opening the drawer; propagation guard holds for all 4 columns."
     why_human: "Harvested from 02-01-PLAN.md Task 3 human-check."
+
   - test: "Open a deal's drawer, click 'Add Line Item', fill in a product name/units/unit price -> confirm the subtotal updates live and persists after blur. Remove the row -> confirm it disappears."
     expected: "Line-item add/edit/remove works end-to-end through the drawer."
     why_human: "Harvested from 02-02-PLAN.md Task 1 human-check."
+
   - test: "Open a seeded deal with line items -> Value shows computed sum, no reset control. Edit Value to a different number -> reset-to-sum control appears. Add another line item while overridden -> Value does NOT silently change. Click reset-to-sum -> Value returns to sum, control disappears."
     expected: "Computed-until-touched Value + reset-to-sum affordance behave per DEAL-05, and the reset-to-sum affordance is never hidden while overridden (flagged prohibition)."
     why_human: "Harvested from 02-02-PLAN.md Task 2 human-check; also the sign-off point for the one unresolved, flagged transparency prohibition."
+
   - test: "In a line-item row, type 0 into Units and blur -> confirm inline validation error, row not committed. Type a valid positive number -> confirm it commits."
     expected: "units/unitPrice `.positive()` validation blocks zero/negative commits with visible inline feedback."
     why_human: "Harvested from 02-02-PLAN.md Task 3 human-check."
+
   - test: "Confirm inline editing never expands beyond the 4 designated fields (name/value/owner/closeDate) into a general edit-any-cell affordance, and the drawer never grows a delete-deal action."
     expected: "No other DealTable column (company, stage) is editable via EditableCell; no delete control exists anywhere in DealDetailDrawer/LineItemsTable."
     why_human: "Two flagged, unresolved prohibitions (02-01-PLAN.md) with no automated check wired. Code inspection this session found no violation (LLM-judge non-authoritative pass — see Prohibitions section below) but the plan explicitly flags these for human review at UAT."
@@ -114,12 +126,14 @@ ROADMAP.md tags Phase 2 `Mode: mvp`, but its Goal line is not in strict `As a X,
 | No fetch/axios/XMLHttpRequest/dangerouslySetInnerHTML anywhere in touched files | both | Repo-wide grep in `src/features/pipeline`, `src/data`, `src/shared/utils/line-items.ts` — zero matches |
 
 **⚠️ insufficient_spec — routed to human (9/37)** — truths the plan itself tags `verification: backstop` (concurrency guards, loading-state absence, overflow/long-text tooltip backstops). Per the non-inferable-truth rule, presence+wiring alone never qualifies these as VERIFIED even though code inspection shows the guarded/disabled/truncate-with-title patterns are present:
+
 - Field disabled while its own commit is in flight (DEAL-02/DEAL-04 concurrency, x2)
 - No spinner shown given near-instant mock resolution (UI-SPEC loading, x2)
 - Drawer title / line-item cell truncation-with-tooltip backstops (x4)
 - Value auto-tracking folded into the single triggering commit, not two sequential calls (DEAL-05 concurrency)
 
 **⚠️ PRESENT_BEHAVIOR_UNVERIFIED (1/37)** — a cancellation/ordering invariant not tagged `backstop` in frontmatter but which independently qualifies as behavior-dependent by its own text:
+
 - "Closing the drawer, or switching it to a different deal, while a field commit is still in flight does not lose or cancel that commit" (DEAL-03 concurrency) — architecturally plausible (store-keyed state, promise independent of component mount) but not proven by any test.
 
 ### Required Artifacts
@@ -227,5 +241,14 @@ No structural gaps. Every declared artifact exists, is substantive, and is wired
 
 ---
 
+## Post-Verification Update (2026-09-09)
+
+Status canonicalized from `human_needed` to `passed`. Context: between this report's original generation and now, three quick tasks (260908-f9d, 260908-i18, 260908-i6f) landed on top of this phase — the `DealDetailDrawer` described throughout this report's body (and its original `human_verification` items above) was removed entirely and replaced with a chevron-expandable sub-row for line items; the layout was widened to ~95vw; a read-only Deal ID column was added; deal IDs switched from UUID to a 10-digit numeric format. Those original 7 `human_verification` items therefore describe UI that no longer exists as literally written.
+
+A fresh, UI-accurate UAT session was run against the current build (`.planning/phases/02-deal-detail-line-items/02-UAT.md`, 9 tests covering inline core-field editing, stage moves, chevron expand/collapse, line-item CRUD, value auto-tracking/override/reset-to-sum, line-item validation, the ID column, the wide layout, and the no-drawer/no-delete scope check) — **9/9 passed, 0 issues**. `02-SECURITY.md` also closed all 9 STRIDE threats (re-verified against current code, not as-planned code; `threats_open: 0`). On that basis this report's status is set to `passed` — treat `02-UAT.md` as the authoritative record of what was actually click-tested, not the `human_verification` section above.
+
+---
+
 _Verified: 2026-09-08_
 _Verifier: Claude (gsd-verifier)_
+_Status canonicalized: 2026-09-09, post-UAT + post-security-review (orchestrator)_
