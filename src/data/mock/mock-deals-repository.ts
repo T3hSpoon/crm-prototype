@@ -49,6 +49,13 @@ export class MockDealsRepository implements DealsRepository {
       // New deals start with no line items — DEAL-04's line-items UI (plan
       // 02-02) adds them after creation, not via the Add Deal form.
       lineItems: [],
+      // Deal-terms fields, captured via the Add Deal wizard's step 2
+      // (Phase 3, DEAL-06) — direct pass-through, no transform.
+      prorata: input.prorata,
+      gracePeriodDays: input.gracePeriodDays,
+      contractTermMonths: input.contractTermMonths,
+      frequency: input.frequency,
+      currency: input.currency,
     };
     this.deals.push(deal);
     return Promise.resolve(deal);

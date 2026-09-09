@@ -1,9 +1,18 @@
 import { faker } from "@faker-js/faker";
-import type { Deal, LineItem, LineItemType, PipelineStage } from "@/shared/types/deal";
+import type {
+  Deal,
+  DealCurrency,
+  DealFrequency,
+  LineItem,
+  LineItemType,
+  PipelineStage,
+} from "@/shared/types/deal";
 import { sumLineItems } from "@/shared/utils/line-items";
 
 const STAGES: PipelineStage[] = ["prospect", "lead", "opportunity", "deal"];
 const LINE_ITEM_TYPES: LineItemType[] = ["product", "service"];
+const FREQUENCIES: DealFrequency[] = ["monthly", "quarterly", "quadrimestral", "semi-annual", "annually"];
+const CURRENCIES: DealCurrency[] = ["USD", "EUR", "GBP"];
 
 function buildSeedLineItem(): LineItem {
   return {
@@ -49,6 +58,11 @@ function buildSeedDeal(): Deal {
     outcome: isLost ? "lost" : "open",
     createdAt: faker.date.recent({ days: 60 }).toISOString(),
     lineItems,
+    prorata: faker.datatype.boolean(),
+    gracePeriodDays: faker.number.int({ min: 0, max: 90 }),
+    contractTermMonths: faker.number.int({ min: 0, max: 60 }),
+    frequency: faker.helpers.arrayElement(FREQUENCIES),
+    currency: faker.helpers.arrayElement(CURRENCIES),
   };
 }
 
