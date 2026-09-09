@@ -110,7 +110,7 @@ export function AddDealDialog({ open, onOpenChange }: AddDealDialogProps) {
   };
 
   const handleNext = async () => {
-    const valid = await form.trigger(["name", "company", "value", "owner", "closeDate", "group"]);
+    const valid = await form.trigger(["name", "company", "owner", "closeDate", "group"]);
     if (valid) setStep(2);
   };
 
@@ -144,25 +144,6 @@ export function AddDealDialog({ open, onOpenChange }: AddDealDialogProps) {
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor={field.name}>Company</FieldLabel>
                     <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-              <Controller
-                name="value"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Value</FieldLabel>
-                    <Input
-                      {...field}
-                      value={(field.value as string | number | undefined) ?? ""}
-                      id={field.name}
-                      type="number"
-                      min={0}
-                      step="any"
-                      aria-invalid={fieldState.invalid}
-                    />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
