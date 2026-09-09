@@ -9,7 +9,7 @@ import { z } from "zod";
 export const addDealStep1Schema = z.object({
   name: z.string().min(1, "Name is required"),
   company: z.string().min(1, "Company is required"),
-  value: z.coerce.number().positive("Value must be positive"),
+  value: z.coerce.number().nonnegative("Value must be zero or positive"),
   owner: z.string().min(1, "Owner is required"),
   closeDate: z.string().min(1, "Close date is required"),
   group: z.enum(["prospect", "lead", "opportunity", "deal", "lost"]),
