@@ -22,3 +22,5 @@ npm-debug.log*
 
 # Regenerable research cache
 .planning/research/.cache/
+
+.vercel

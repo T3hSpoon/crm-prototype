@@ -9,8 +9,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Pipeline
 
-- [ ] **PIPE-01**: User can view deals grouped by pipeline stage (Prospect, Lead, Opportunity, Deal/Won, Lost)
-- [ ] **PIPE-02**: User can move a deal from one pipeline stage to another
+- [x] **PIPE-01**: User can view deals grouped by pipeline stage (Prospect, Lead, Opportunity, Deal/Won, Lost)
+- [x] **PIPE-02**: User can move a deal from one pipeline stage to another
 - [ ] **PIPE-03**: Won deals appear as a distinct group that serves as the "contracts made so far" list
 - [ ] **PIPE-04**: User can search deals by name/company across the pipeline table
 - [ ] **PIPE-05**: User can filter the pipeline table by owner, value, stage, or close date
@@ -18,11 +18,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Deals
 
-- [ ] **DEAL-01**: User can add a new prospect/deal via a form
-- [ ] **DEAL-02**: User can edit a deal's fields inline (name, value, owner, close date)
-- [ ] **DEAL-03**: User can open a deal detail drawer/panel to view and edit its full details
-- [ ] **DEAL-04**: User can add, edit, and remove line items on a deal (product/service, SKU, units, unit price, subtotal, type)
-- [ ] **DEAL-05**: A deal's total value defaults to the sum of its line items, with the option to manually override it
+- [x] **DEAL-01**: User can add a new prospect/deal via a form
+- [x] **DEAL-02**: User can edit a deal's fields inline (name, value, owner, close date)
+- [x] **DEAL-03**: User can open a deal detail drawer/panel to view and edit its full details
+- [x] **DEAL-04**: User can add, edit, and remove line items on a deal (product/service, SKU, units, unit price, subtotal, type)
+- [x] **DEAL-05**: A deal's total value defaults to the sum of its line items, with the option to manually override it
 
 ### Lost Tracking
 
@@ -68,23 +68,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PIPE-01 | Phase 1 | Pending |
-| PIPE-02 | Phase 1 | Pending |
+| PIPE-01 | Phase 1 | Complete |
+| PIPE-02 | Phase 1 | Complete |
 | PIPE-03 | Phase 3 | Pending |
 | PIPE-04 | Phase 4 | Pending |
 | PIPE-05 | Phase 4 | Pending |
 | PIPE-06 | Phase 4 | Pending |
-| DEAL-01 | Phase 1 | Pending |
-| DEAL-02 | Phase 2 | Pending |
-| DEAL-03 | Phase 2 | Pending |
-| DEAL-04 | Phase 2 | Pending |
-| DEAL-05 | Phase 2 | Pending |
+| DEAL-01 | Phase 1 | Complete |
+| DEAL-02 | Phase 2 | Complete |
+| DEAL-03 | Phase 2 | Complete |
+| DEAL-04 | Phase 2 | Complete |
+| DEAL-05 | Phase 2 | Complete |
 | LOST-01 | Phase 3 | Pending |
 | LOST-02 | Phase 3 | Pending |
 | FCST-01 | Phase 4 | Pending |
 | FCST-02 | Phase 4 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 15 total
 - Mapped to phases: 15
 - Unmapped: 0 ✓
