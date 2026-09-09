@@ -6,7 +6,7 @@ status: planning
 stopped_at: Phase 03 complete, ready to plan Phase 03.1
 last_updated: "2026-09-09T14:16:34.791Z"
 last_activity: 2026-09-09
-last_activity_desc: Phase 03 complete, transitioned to Phase 03.1
+last_activity_desc: Completed quick task 260909-o2k - Remove Add Deal Value input field
 state_head: beab3e1a4db41c85929991b7c9917f23891927a6
 progress:
   total_phases: 5
@@ -103,6 +103,7 @@ None yet.
 | 2 | Add a read-only "ID" column as the last column of the pipeline table, showing each deal's stable id in muted monospace text | 2026-09-08 | eeb63a0 | .planning/quick/260908-i18-add-a-read-only-deal-id-column-as-the-la |
 | 3 | Replace UUID-format deal ID generation with a plain 10-digit numeric-string ID format | 2026-09-08 | 55653a8 | — |
 | 4 | Add vercel.json for static Vite SPA deployment (build/output config + SPA rewrite fallback) | 2026-09-09 | 4ec0dc3 | — |
+| 5 | From the Add Deal modal, remove the Value input field, but keep the default value at 0 (already calculated from sub-items) | 2026-09-09 | ceb9a7c | .planning/quick/260909-o2k-from-the-add-deal-modal-remove-the-value |
 
 ### Roadmap Evolution
 
