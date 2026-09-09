@@ -152,6 +152,16 @@ Every new deal created via the Add Deal wizard now carries all 5 deal-terms fiel
 
 **Known unresolved item (surfaced by the plan itself, not a gap introduced here):** the plan's `must_haves.prohibitions` flags a transparency concern — step 2's default values (Prorata=No, Grace Period=0, etc.) are indistinguishable from deliberately-entered values, since there is no touched-state tracking. This was explicitly flagged in the plan as `status: unresolved`, `verification: backstop`-adjacent, with no wired check requested this phase — carried forward here unchanged, flagged for human review at UAT per the plan's own note.
 
+## Self-Check: PASSED
+
+- FOUND: `.planning/phases/03-deal-terms-wizard/03-01-SUMMARY.md`
+- FOUND: `src/shared/types/deal.ts`
+- FOUND: `src/features/pipeline/components/add-deal-schema.ts`
+- FOUND: `src/features/pipeline/components/AddDealDialog.tsx`
+- FOUND commit: `b955192`
+- FOUND commit: `5c75c4c`
+- FOUND commit: `220ef74`
+
 ---
 *Phase: 03-deal-terms-wizard*
 *Completed: 2026-09-09*
