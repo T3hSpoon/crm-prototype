@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Pipeline Board Foundation** - Grouped pipeline table with mock data, add-deal form, and stage-to-stage moves (completed 2026-09-07)
 - [x] **Phase 2: Deal Detail & Line Items** - Full deal detail view with inline editing and line-item-driven value rollup (completed 2026-09-09)
-- [ ] **Phase 3: Deal Terms Wizard** - 2-step Add Deal wizard capturing deal-terms/contract fields for every new deal at creation
+- [x] **Phase 3: Deal Terms Wizard** - 2-step Add Deal wizard capturing deal-terms/contract fields for every new deal at creation (completed 2026-09-09)
 - [ ] **Phase 3.1: Lost & Won Tracking (INSERTED)** - Explicit lost-deal flow with required reason, plus a contract terms form on Won and Won deals as the contracts list
 - [ ] **Phase 4: Forecast & Pipeline Analysis** - Search/filter/sort plus a forecast page with weighted pipeline value and win rate
 
@@ -94,12 +94,12 @@ Plans:
   4. All 5 deal-terms fields are required — the wizard cannot be submitted until every field is completed
   5. Submitting step 2 creates the deal with all captured fields, appearing in whichever pipeline stage/group was selected on step 1 (not gated to Won)
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — 2-step Add Deal wizard: types, schema, dialog, repository, seed data + spec-fidelity polish (DEAL-06)
+- [x] 03-01-PLAN.md — 2-step Add Deal wizard: types, schema, dialog, repository, seed data + spec-fidelity polish (DEAL-06)
 
 **UI hint**: yes
 
@@ -146,6 +146,6 @@ Phases execute in order: 1 → 2 → 3 → 3.1 → 4
 |-------|----------------|--------|-----------|
 | 1. Pipeline Board Foundation | 4/4 | Complete    | 2026-09-07 |
 | 2. Deal Detail & Line Items | 2/2 | Complete    | 2026-09-09 |
-| 3. Deal Terms Wizard | 0/1 | Not started | - |
+| 3. Deal Terms Wizard | 1/1 | Complete    | 2026-09-09 |
 | 3.1. Lost & Won Tracking (INSERTED) | 0/TBD | Not started | - |
 | 4. Forecast & Pipeline Analysis | 0/TBD | Not started | - |

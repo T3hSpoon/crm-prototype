@@ -17,10 +17,10 @@ A working, demoable pipeline view — prospects flow through stages, lost deals 
 - ✓ User can move a deal between pipeline stages — Phase 1
 - ✓ User can edit deal details inline (fields and line items) — Phase 2
 - ✓ Each deal supports line items (subitems): product/service, SKU, units, unit price, subtotal, type — Phase 2
+- ✓ User can capture deal-terms/contract fields (Prorata, Grace Period, Contract Term, Frequency, Currency) via a 2-step Add Deal wizard, for every new deal at creation — Phase 3
 
 ### Active
 
-- [ ] User can capture deal-terms/contract fields (Prorata, Grace Period, Contract Term, Frequency, Currency) via a 2-step Add Deal wizard, for every new deal at creation
 - [ ] User can mark a deal as lost, capture a reason, and it moves to a separate Lost group
 - [ ] Won deals are listed as the "contracts made so far" view (no separate contract entity)
 - [ ] Forecast page showing pipeline value, win rate, and projected revenue, derived from mock data
@@ -57,7 +57,7 @@ A working, demoable pipeline view — prospects flow through stages, lost deals 
 | Line items (subitems) per deal | Needed to capture product/service composition, mirroring the monday.com reference | Shipped Phase 2 — `LineItemsTable` (add/edit/remove), value auto-tracks the sum via `sumLineItems`/`hasManualOverride` with a manual-override + reset-to-sum path, positive-value validation on units/unitPrice |
 | Lost deals tracked in a separate group with a reason field | User wants to see what fell through and why | Partially shipped Phase 1 — Lost is a live board group; the required-reason gate is deferred to Phase 3.1 by design |
 | Won deals double as the "contracts made" list | No separate contract entity needed — a closed-won deal is the contract | — Pending (Phase 3.1) |
-| Deal-terms/contract fields (Prorata, Grace Period, Contract Term, Frequency, Currency) captured on every new deal, at creation | User wants this data captured up front for later contract/quote template generation, regardless of pipeline stage | — Pending (Phase 3, inserted this session ahead of the original Lost & Won scope, which moved to Phase 3.1) |
+| Deal-terms/contract fields (Prorata, Grace Period, Contract Term, Frequency, Currency) captured on every new deal, at creation | User wants this data captured up front for later contract/quote template generation, regardless of pipeline stage | Shipped Phase 3 — `AddDealDialog` converted to a 2-step wizard (step 1 unchanged; step 2 adds all 5 fields via `addDealStep2Schema`, required with sane numeric bounds); accepted risk that un-touched step-2 defaults are indistinguishable from deliberately-entered values, confirmed acceptable for this phase's scope by the user at UAT (`03-SECURITY.md` AR-03-01) |
 | Forecast page included in v1 | User wants evaluation/forecast analysis available now, not deferred to v2 | — Pending (Phase 4) |
 | No authentication in prototype | Single-user scope for this phase | Confirmed Phase 1 — no auth code exists anywhere in the codebase |
 | TypeScript pinned to 5.9.3, not 7.0.2 | `typescript-eslint@8.68.0`'s peer range (`<6.1.0`) is incompatible with TS 7's native compiler | Shipped Phase 1 |
@@ -85,4 +85,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-09-09 after Phase 2*
+*Last updated: 2026-09-09 after Phase 3*

@@ -1,19 +1,19 @@
 ---
 gsd_state_version: 1.0
-current_phase: 03
-current_phase_name: Deal Terms Wizard
-status: executing
-stopped_at: Phase 3 UI-SPEC approved
-last_updated: "2026-09-09T12:30:10.321Z"
+current_phase: 03.1
+current_phase_name: Lost & Won Tracking
+status: planning
+stopped_at: Phase 03 complete, ready to plan Phase 03.1
+last_updated: "2026-09-09T14:16:34.791Z"
 last_activity: 2026-09-09
-last_activity_desc: Phase 03 execution started
-state_head: 06f42bbdd302a8cdbb14dc6684cdb79079d84fde
+last_activity_desc: Phase 03 complete, transitioned to Phase 03.1
+state_head: beab3e1a4db41c85929991b7c9917f23891927a6
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 6
-  percent: 40
+  completed_plans: 7
+  percent: 60
 ---
 
 Total Phases: 5
@@ -25,22 +25,22 @@ Total Phases: 5
 See: .planning/PROJECT.md (updated 2026-09-09)
 
 **Core value:** A working, demoable pipeline view — prospects flow through stages, lost deals are tracked with reasons, and won deals roll up as the contract list — solid enough to later wire into iDrive's existing project without a rebuild.
-**Current focus:** Phase 03 — Deal Terms Wizard
+**Current focus:** Phase 03.1 — Lost & Won Tracking
 
 ## Current Position
 
-Phase: 03 (Deal Terms Wizard) — EXECUTING
-Plan: 1 of 1
-Status: Executing Phase 03
-Last activity: 2026-09-09 — Phase 03 execution started
+Phase: 03.1 — Lost & Won Tracking
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-09-09 — Phase 03 complete, transitioned to Phase 03.1
 
-Progress: [████░░░░░░] 6/6 plans (100%) executed so far — 2/5 phases (40%) complete
+Progress: [████████████████████] 7/7 plans (100%) executed so far — 3/5 phases (60%) complete
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: - min
 - Total execution time: 0 hours
 
@@ -50,6 +50,7 @@ Progress: [████░░░░░░] 6/6 plans (100%) executed so far — 
 |-------|-------|-------|----------|
 | 01 | 4 | - | - |
 | 02 | 2 | - | - |
+| 03 | 1 | - | - |
 
 **Recent Trend:**
 
@@ -80,6 +81,7 @@ Recent decisions affecting current work:
 - [Phase 02]: Comparison-based override detection (no stored hasManualOverride flag on Deal) for DEAL-05; value auto-tracks lineItems sum until it diverges
 - [Phase 02]: productOrService/sku left unconstrained on lineItemSchema (no .min(1)) per this plan's must_haves
 - [Phase 02, post-execution]: Deal detail drawer removed entirely; line items now live in a chevron-expandable sub-row directly in the pipeline table, board widened to ~95% viewport, deal IDs switched to 10-digit numeric strings, and a Vercel deployment is live at https://eld-dusky.vercel.app (see PROJECT.md Key Decisions)
+- [Phase 03]: Add Deal converted to a 2-step wizard (step 1 unchanged; step 2 adds Prorata/Grace Period/Contract Term/Frequency/Currency via `addDealStep2Schema`); accepted risk that un-touched step-2 defaults are indistinguishable from deliberate entry, confirmed acceptable for this phase's scope by the user at UAT — see `03-SECURITY.md` AR-03-01
 
 ### Pending Todos
 
@@ -90,6 +92,7 @@ None yet.
 - Phase 4 (Forecast) depends on Phases 1, 2, 3, and 3.1 — it needs correct deal values (Phase 2) and resolved lost/won data (Phase 3.1) for its loss-reason breakdown; do not start Phase 4 planning until Phase 3.1 is complete
 - Stage-probability percentages for weighted forecast value are placeholders from research (Prospect 10%/Lead 25%/Opportunity 50%/Deal 80-90%) — treat as documented, adjustable config, not calibrated figures
 - [Phase 1] `01-REVIEW.md` (5 warnings, non-blocking): `moveStage`/`addDeal` don't handle a rejected repository promise, no double-submit guard on Add Deal, store's `status` field is written but never read (no loading/error UI), one shadcn-generated file fails the project's own ESLint rule. None block Phase 1 — all become real gaps once a phase swaps the mock repository for a fallible network implementation. Worth a pass before/during that swap.
+- [Phase 3] `03-REVIEW.md` (2 warnings, non-blocking, both pre-existing patterns not introduced by Phase 3): `addDeal` still lacks the try/catch+log+re-throw pattern `updateDeal` already has (same root cause as the Phase 1 `addDeal` warning above); the 10-digit random deal-id generator has no uniqueness check against existing ids (collision would silently corrupt the wrong record via `findIndex`-based lookups). Neither blocks Phase 3's functional goal — worth addressing in the same pass as the Phase 1 mock-repository-fallibility item above.
 - The user plans to eventually move/merge this prototype into an existing iDrive project (see PROJECT.md Context) — not started yet, just flagged so a future session doesn't lose the intent.
 
 ### Quick Tasks Completed
@@ -117,6 +120,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-09T12:00:26.877Z
-Stopped at: Phase 3 UI-SPEC approved
-Resume file: C:/gh-repos/eld/.planning/phases/03-deal-terms-wizard/03-UI-SPEC.md
+Last session: 2026-09-09T16:20:00.000Z
+Stopped at: Phase 03 complete, ready to plan Phase 03.1
+Resume file: None

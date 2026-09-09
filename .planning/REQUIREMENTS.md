@@ -23,7 +23,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DEAL-03**: User can open a deal detail drawer/panel to view and edit its full details
 - [x] **DEAL-04**: User can add, edit, and remove line items on a deal (product/service, SKU, units, unit price, subtotal, type)
 - [x] **DEAL-05**: A deal's total value defaults to the sum of its line items, with the option to manually override it
-- [ ] **DEAL-06**: User can capture deal-terms/contract fields (Prorata, Grace Period, Contract Term, Frequency, Currency) via a 2-step Add Deal wizard, required for every new deal at creation, regardless of pipeline stage
+- [x] **DEAL-06**: User can capture deal-terms/contract fields (Prorata, Grace Period, Contract Term, Frequency, Currency) via a 2-step Add Deal wizard, required for every new deal at creation, regardless of pipeline stage
 
 ### Lost Tracking
 
@@ -84,7 +84,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEAL-03 | Phase 2 | Complete |
 | DEAL-04 | Phase 2 | Complete |
 | DEAL-05 | Phase 2 | Complete |
-| DEAL-06 | Phase 3 | Pending |
+| DEAL-06 | Phase 3 | Complete |
 | LOST-01 | Phase 3.1 | Pending |
 | LOST-02 | Phase 3.1 | Pending |
 | WON-01 | Phase 3.1 | Pending |
