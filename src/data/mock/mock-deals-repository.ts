@@ -56,15 +56,11 @@ export class MockDealsRepository implements DealsRepository {
       contractTermMonths: input.contractTermMonths,
       frequency: input.frequency,
       currency: input.currency,
-      // Customer Type / Confidence Level / financial metrics, captured via
-      // the Add Deal wizard's step 2 (Quick task 260910-ec8) — direct
-      // pass-through, no transform.
+      // Customer Type / Confidence Level, captured via the Add Deal
+      // wizard's step 2 (Quick task 260910-ec8) — direct pass-through, no
+      // transform.
       customerType: input.customerType,
       confidenceLevel: input.confidenceLevel,
-      arpu: input.arpu,
-      mrr: input.mrr,
-      arr: input.arr,
-      lifetimeContractValue: input.lifetimeContractValue,
     };
     this.deals.push(deal);
     return Promise.resolve(deal);

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -86,10 +86,6 @@ const DEFAULT_VALUES: AddDealFormInput = {
   currency: "USD",
   customerType: "similar",
   confidenceLevel: "open-to-rfp",
-  arpu: undefined,
-  mrr: undefined,
-  arr: undefined,
-  lifetimeContractValue: undefined,
 };
 
 interface AddDealDialogProps {
@@ -113,41 +109,6 @@ export function AddDealDialog({ open, onOpenChange }: AddDealDialogProps) {
     resolver: zodResolver(addDealSchema),
     defaultValues: DEFAULT_VALUES,
   });
-
-  // Live auto-calc: ARR = MRR x 12, Lifetime Contract Value = MRR x Contract
-  // Term (months) — mirrors DEAL-05's auto-track-with-manual-override shape
-  // (comparison-based, no extra stored boolean), adapted for a pre-creation
-  // form via react-hook-form's own `formState.dirtyFields` instead of a
-  // persisted-Deal comparison (RESEARCH.md). Scoped to exactly these two
-  // field names, not the whole form, to minimize re-render surface.
-  const [mrr, contractTermMonths] = useWatch({
-    control: form.control,
-    name: ["mrr", "contractTermMonths"],
-  });
-
-  useEffect(() => {
-    // Clearing MRR back to empty must also clear the fields tracking it —
-    // otherwise ARR/Lifetime Contract Value are left stale at their last
-    // computed value while MRR itself coerces to 0 on submit, producing an
-    // internally inconsistent persisted Deal (e.g. mrr: 0, arr: 6000).
-    const parsedMrr = Number(mrr);
-    const mrrNum = Number.isNaN(parsedMrr) ? 0 : parsedMrr;
-    if (!form.formState.dirtyFields.arr) {
-      // Explicitly opting out of marking the field dirty is essential here —
-      // omitting that option would mark `arr` dirty on this very write,
-      // permanently locking auto-calc off on the next effect run even
-      // though the user never typed anything.
-      form.setValue("arr", mrrNum * 12, { shouldDirty: false, shouldValidate: false });
-    }
-    if (!form.formState.dirtyFields.lifetimeContractValue) {
-      const termNum = Number(contractTermMonths) || 0;
-      form.setValue("lifetimeContractValue", mrrNum * termNum, {
-        shouldDirty: false,
-        shouldValidate: false,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- form/setValue stable refs
-  }, [mrr, contractTermMonths]);
 
   const onSubmit = async (values: AddDealFormValues) => {
     // `prorata` is "yes"/"no" in AddDealFormValues (see add-deal-schema.ts
@@ -402,88 +363,6 @@ export function AddDealDialog({ open, onOpenChange }: AddDealDialogProps) {
                         ))}
                       </SelectContent>
                     </Select>
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-              <Controller
-                name="arpu"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>ARPU</FieldLabel>
-                    <Input
-                      {...field}
-                      value={(field.value as string | number | undefined) ?? ""}
-                      id={field.name}
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-              <Controller
-                name="mrr"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>MRR</FieldLabel>
-                    <Input
-                      {...field}
-                      value={(field.value as string | number | undefined) ?? ""}
-                      id={field.name}
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-              <Controller
-                name="arr"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>ARR</FieldLabel>
-                    <Input
-                      {...field}
-                      value={(field.value as string | number | undefined) ?? ""}
-                      id={field.name}
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      placeholder="Auto-calculated from MRR x 12"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    <FieldDescription>Auto-calculated from MRR unless edited directly</FieldDescription>
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-              <Controller
-                name="lifetimeContractValue"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Lifetime Contract Value</FieldLabel>
-                    <Input
-                      {...field}
-                      value={(field.value as string | number | undefined) ?? ""}
-                      id={field.name}
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      placeholder="Auto-calculated from MRR x Contract Term"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    <FieldDescription>
-                      Auto-calculated from MRR and Contract Term unless edited directly
-                    </FieldDescription>
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
