@@ -6,7 +6,7 @@ status: planning
 stopped_at: Phase 03 complete, ready to plan Phase 03.1
 last_updated: "2026-09-09T14:16:34.791Z"
 last_activity: 2026-09-09
-last_activity_desc: Completed quick task 260910-fl6 - Move ARPU/MRR/ARR/Lifetime Contract Value from Add Deal wizard to computed pipeline table columns
+last_activity_desc: Completed quick task 260910-gpd - Correct MRR/ARR/Lifetime Contract Value to line-item-type formulas; remove ARPU
 state_head: beab3e1a4db41c85929991b7c9917f23891927a6
 progress:
   total_phases: 5
@@ -106,7 +106,8 @@ None yet.
 | 4 | Add vercel.json for static Vite SPA deployment (build/output config + SPA rewrite fallback) | 2026-09-09 | 4ec0dc3 | | — |
 | 5 | From the Add Deal modal, remove the Value input field, but keep the default value at 0 (already calculated from sub-items) | 2026-09-09 | ceb9a7c | | .planning/quick/260909-o2k-from-the-add-deal-modal-remove-the-value |
 | 6 | Add Customer Type, Confidence Level, and financial metric fields (ARPU/MRR/ARR/Lifetime Contract Value) to the Add Deal wizard's step 2 | 2026-09-10 | 85a7ff2 | Needs Review (financial fields superseded by #7) | .planning/quick/260910-ec8-add-three-new-field-groups-to-the-add-de |
-| 7 | Move ARPU/MRR/ARR/Lifetime Contract Value out of the Add Deal wizard (correction to #6) — now purely computed from Value/Frequency/Contract Term/line-item units and shown as new columns in the pipeline table | 2026-09-10 | 7cc9dc8 | Verified | .planning/quick/260910-fl6-remove-the-arpu-mrr-arr-and-lifetime-con |
+| 7 | Move ARPU/MRR/ARR/Lifetime Contract Value out of the Add Deal wizard (correction to #6) — now purely computed from Value/Frequency/Contract Term/line-item units and shown as new columns in the pipeline table | 2026-09-10 | 7cc9dc8 | Superseded by #8 | .planning/quick/260910-fl6-remove-the-arpu-mrr-arr-and-lifetime-con |
+| 8 | Correct MRR/ARR/Lifetime Contract Value formulas to key off line-item type (product vs service) instead of Value/Frequency (correction to #7); remove ARPU entirely; hide MRR/ARR columns from the table (calculations kept) | 2026-09-10 | d5c7750 | Verified (build/lint/worked-examples; no agent code-review/verify — session rate limit) | .planning/quick/260910-gpd-rework-the-pipeline-table-s-mrr-arr-life |
 
 ### Roadmap Evolution
 
