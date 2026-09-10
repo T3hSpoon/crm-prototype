@@ -126,8 +126,12 @@ export function AddDealDialog({ open, onOpenChange }: AddDealDialogProps) {
   });
 
   useEffect(() => {
-    const mrrNum = Number(mrr);
-    if (!mrr || Number.isNaN(mrrNum)) return;
+    // Clearing MRR back to empty must also clear the fields tracking it —
+    // otherwise ARR/Lifetime Contract Value are left stale at their last
+    // computed value while MRR itself coerces to 0 on submit, producing an
+    // internally inconsistent persisted Deal (e.g. mrr: 0, arr: 6000).
+    const parsedMrr = Number(mrr);
+    const mrrNum = Number.isNaN(parsedMrr) ? 0 : parsedMrr;
     if (!form.formState.dirtyFields.arr) {
       // Explicitly opting out of marking the field dirty is essential here —
       // omitting that option would mark `arr` dirty on this very write,
