@@ -1,5 +1,7 @@
 import { faker } from "@faker-js/faker";
 import type {
+  ConfidenceLevel,
+  CustomerType,
   Deal,
   DealCurrency,
   DealFrequency,
@@ -13,6 +15,8 @@ const STAGES: PipelineStage[] = ["prospect", "lead", "opportunity", "deal"];
 const LINE_ITEM_TYPES: LineItemType[] = ["product", "service"];
 const FREQUENCIES: DealFrequency[] = ["monthly", "quarterly", "quadrimestral", "semi-annual", "annually"];
 const CURRENCIES: DealCurrency[] = ["USD", "EUR", "GBP"];
+const CUSTOMER_TYPES: CustomerType[] = ["government", "private-utility", "private-fleet", "similar"];
+const CONFIDENCE_LEVELS: ConfidenceLevel[] = ["100", "80", "50", "open-to-rfp"];
 
 function buildSeedLineItem(): LineItem {
   return {
@@ -44,6 +48,11 @@ function buildSeedDeal(): Deal {
       ? []
       : Array.from({ length: lineItemCount }, buildSeedLineItem);
 
+  // Hoisted so both the return object's contractTermMonths and the
+  // financial-metric fields below can reference the same value.
+  const mrr = faker.number.int({ min: 0, max: 50_000 });
+  const contractTermMonths = faker.number.int({ min: 0, max: 60 });
+
   return {
     id: faker.string.numeric(10),
     name: faker.company.buzzPhrase(),
@@ -60,9 +69,19 @@ function buildSeedDeal(): Deal {
     lineItems,
     prorata: faker.datatype.boolean(),
     gracePeriodDays: faker.number.int({ min: 0, max: 90 }),
-    contractTermMonths: faker.number.int({ min: 0, max: 60 }),
+    contractTermMonths,
     frequency: faker.helpers.arrayElement(FREQUENCIES),
     currency: faker.helpers.arrayElement(CURRENCIES),
+    // Customer Type / Confidence Level / financial metrics (Quick task
+    // 260910-ec8). ARR/Lifetime Contract Value are computed from
+    // MRR/Contract Term here to keep seed data internally consistent, since
+    // seed deals never pass through the wizard's live auto-calc effect.
+    customerType: faker.helpers.arrayElement(CUSTOMER_TYPES),
+    confidenceLevel: faker.helpers.arrayElement(CONFIDENCE_LEVELS),
+    arpu: faker.number.int({ min: 0, max: 500 }),
+    mrr,
+    arr: mrr * 12,
+    lifetimeContractValue: mrr * contractTermMonths,
   };
 }
 

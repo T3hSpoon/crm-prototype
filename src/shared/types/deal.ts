@@ -29,6 +29,16 @@ export type DealFrequency = "monthly" | "quarterly" | "quadrimestral" | "semi-an
 /** Contract currency for a deal's deal-terms fields (Phase 3, DEAL-06). */
 export type DealCurrency = "USD" | "EUR" | "GBP";
 
+/** Customer classification captured via the Add Deal wizard's step 2 (Quick task 260910-ec8). */
+export type CustomerType = "government" | "private-utility" | "private-fleet" | "similar";
+
+/**
+ * Forecast-confidence classification captured via the Add Deal wizard's step
+ * 2 (Quick task 260910-ec8). `"open-to-rfp"` is a non-numeric sentinel —
+ * distinct from the three percentage values, never coerced to a number.
+ */
+export type ConfidenceLevel = "100" | "80" | "50" | "open-to-rfp";
+
 /**
  * A single product/service line item on a Deal (Phase 2, DEAL-04). A
  * subtotal is intentionally NOT a field here — always derived from
@@ -66,6 +76,17 @@ export interface Deal {
   contractTermMonths: number;
   frequency: DealFrequency;
   currency: DealCurrency;
+  /**
+   * Customer Type / Confidence Level / financial metrics captured via the
+   * Add Deal wizard's step 2 (Quick task 260910-ec8). The four financial
+   * fields are optional — early-stage deals often lack firm numbers yet.
+   */
+  customerType: CustomerType;
+  confidenceLevel: ConfidenceLevel;
+  arpu?: number;
+  mrr?: number;
+  arr?: number;
+  lifetimeContractValue?: number;
 }
 
 /**
@@ -86,4 +107,15 @@ export interface NewDealInput {
   contractTermMonths: number;
   frequency: DealFrequency;
   currency: DealCurrency;
+  /**
+   * Customer Type / Confidence Level / financial metrics captured via the
+   * Add Deal wizard's step 2 (Quick task 260910-ec8). The four financial
+   * fields are optional — early-stage deals often lack firm numbers yet.
+   */
+  customerType: CustomerType;
+  confidenceLevel: ConfidenceLevel;
+  arpu?: number;
+  mrr?: number;
+  arr?: number;
+  lifetimeContractValue?: number;
 }

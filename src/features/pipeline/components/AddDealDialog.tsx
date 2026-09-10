@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -56,6 +56,22 @@ const PRORATA_OPTIONS: { value: "yes" | "no"; label: string }[] = [
   { value: "no", label: "No" },
 ];
 
+/** Customer Type selector options, step 2 (Quick task 260910-ec8). */
+const CUSTOMER_TYPE_OPTIONS: { value: AddDealFormValues["customerType"]; label: string }[] = [
+  { value: "government", label: "Government" },
+  { value: "private-utility", label: "Private Utility" },
+  { value: "private-fleet", label: "Private Fleet" },
+  { value: "similar", label: "Similar" },
+];
+
+/** Confidence Level selector options, step 2 (Quick task 260910-ec8). */
+const CONFIDENCE_LEVEL_OPTIONS: { value: AddDealFormValues["confidenceLevel"]; label: string }[] = [
+  { value: "100", label: "100%" },
+  { value: "80", label: "80%" },
+  { value: "50", label: "50%" },
+  { value: "open-to-rfp", label: "Open to RFP Bids" },
+];
+
 const DEFAULT_VALUES: AddDealFormInput = {
   name: "",
   company: "",
@@ -68,6 +84,12 @@ const DEFAULT_VALUES: AddDealFormInput = {
   contractTermMonths: 0,
   frequency: "monthly",
   currency: "USD",
+  customerType: "similar",
+  confidenceLevel: "open-to-rfp",
+  arpu: undefined,
+  mrr: undefined,
+  arr: undefined,
+  lifetimeContractValue: undefined,
 };
 
 interface AddDealDialogProps {
@@ -301,6 +323,132 @@ export function AddDealDialog({ open, onOpenChange }: AddDealDialogProps) {
                         ))}
                       </SelectContent>
                     </Select>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="customerType"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Customer Type</FieldLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger id={field.name} aria-invalid={fieldState.invalid} className="w-full">
+                        <SelectValue placeholder="Select a customer type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CUSTOMER_TYPE_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="confidenceLevel"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Confidence Level</FieldLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger id={field.name} aria-invalid={fieldState.invalid} className="w-full">
+                        <SelectValue placeholder="Select a confidence level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CONFIDENCE_LEVEL_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="arpu"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>ARPU</FieldLabel>
+                    <Input
+                      {...field}
+                      value={(field.value as string | number | undefined) ?? ""}
+                      id={field.name}
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="mrr"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>MRR</FieldLabel>
+                    <Input
+                      {...field}
+                      value={(field.value as string | number | undefined) ?? ""}
+                      id={field.name}
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="arr"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>ARR</FieldLabel>
+                    <Input
+                      {...field}
+                      value={(field.value as string | number | undefined) ?? ""}
+                      id={field.name}
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      placeholder="Auto-calculated from MRR x 12"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    <FieldDescription>Auto-calculated from MRR unless edited directly</FieldDescription>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="lifetimeContractValue"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Lifetime Contract Value</FieldLabel>
+                    <Input
+                      {...field}
+                      value={(field.value as string | number | undefined) ?? ""}
+                      id={field.name}
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      placeholder="Auto-calculated from MRR x Contract Term"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    <FieldDescription>
+                      Auto-calculated from MRR and Contract Term unless edited directly
+                    </FieldDescription>
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
