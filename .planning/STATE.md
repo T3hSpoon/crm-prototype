@@ -6,7 +6,7 @@ status: planning
 stopped_at: Phase 03 complete, ready to plan Phase 03.1
 last_updated: "2026-09-09T14:16:34.791Z"
 last_activity: 2026-09-09
-last_activity_desc: Completed quick task 260909-o2k - Remove Add Deal Value input field
+last_activity_desc: Completed quick task 260910-ec8 - Add Customer Type/Confidence Level/financial fields to Add Deal step 2 (needs review)
 state_head: beab3e1a4db41c85929991b7c9917f23891927a6
 progress:
   total_phases: 5
@@ -91,19 +91,21 @@ None yet.
 
 - Phase 4 (Forecast) depends on Phases 1, 2, 3, and 3.1 — it needs correct deal values (Phase 2) and resolved lost/won data (Phase 3.1) for its loss-reason breakdown; do not start Phase 4 planning until Phase 3.1 is complete
 - Stage-probability percentages for weighted forecast value are placeholders from research (Prospect 10%/Lead 25%/Opportunity 50%/Deal 80-90%) — treat as documented, adjustable config, not calibrated figures
+- **[Locked decision for Phase 4 planning, 2026-09-10]** Confidence Level (a new required deal-level field: 100%/80%/50%/Open to RFP Bids, added via quick task 260910-ec8) is intended to REPLACE the stage-probability placeholders above as the actual input to Phase 4's weighted pipeline value calculation. Mapping: 100%→1.0, 80%→0.8, 50%→0.5, Open to RFP Bids→0.0 (conservative — contributes $0 until a real percentage is assigned). Not yet implemented — Phase 4's discuss/plan step should treat this as already-decided, not re-litigate it.
 - [Phase 1] `01-REVIEW.md` (5 warnings, non-blocking): `moveStage`/`addDeal` don't handle a rejected repository promise, no double-submit guard on Add Deal, store's `status` field is written but never read (no loading/error UI), one shadcn-generated file fails the project's own ESLint rule. None block Phase 1 — all become real gaps once a phase swaps the mock repository for a fallible network implementation. Worth a pass before/during that swap.
 - [Phase 3] `03-REVIEW.md` (2 warnings, non-blocking, both pre-existing patterns not introduced by Phase 3): `addDeal` still lacks the try/catch+log+re-throw pattern `updateDeal` already has (same root cause as the Phase 1 `addDeal` warning above); the 10-digit random deal-id generator has no uniqueness check against existing ids (collision would silently corrupt the wrong record via `findIndex`-based lookups). Neither blocks Phase 3's functional goal — worth addressing in the same pass as the Phase 1 mock-repository-fallibility item above.
 - The user plans to eventually move/merge this prototype into an existing iDrive project (see PROJECT.md Context) — not started yet, just flagged so a future session doesn't lose the intent.
 
 ### Quick Tasks Completed
 
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 1 | Widen the app layout to ~95% of the viewport width, and replace the deal-detail drawer line-items UI with an expandable table row | 2026-09-08 | 73c470e | — |
-| 2 | Add a read-only "ID" column as the last column of the pipeline table, showing each deal's stable id in muted monospace text | 2026-09-08 | eeb63a0 | .planning/quick/260908-i18-add-a-read-only-deal-id-column-as-the-la |
-| 3 | Replace UUID-format deal ID generation with a plain 10-digit numeric-string ID format | 2026-09-08 | 55653a8 | — |
-| 4 | Add vercel.json for static Vite SPA deployment (build/output config + SPA rewrite fallback) | 2026-09-09 | 4ec0dc3 | — |
-| 5 | From the Add Deal modal, remove the Value input field, but keep the default value at 0 (already calculated from sub-items) | 2026-09-09 | ceb9a7c | .planning/quick/260909-o2k-from-the-add-deal-modal-remove-the-value |
+| # | Description | Date | Commit | Status | Directory |
+|---|-------------|------|--------|--------|-----------|
+| 1 | Widen the app layout to ~95% of the viewport width, and replace the deal-detail drawer line-items UI with an expandable table row | 2026-09-08 | 73c470e | | — |
+| 2 | Add a read-only "ID" column as the last column of the pipeline table, showing each deal's stable id in muted monospace text | 2026-09-08 | eeb63a0 | | .planning/quick/260908-i18-add-a-read-only-deal-id-column-as-the-la |
+| 3 | Replace UUID-format deal ID generation with a plain 10-digit numeric-string ID format | 2026-09-08 | 55653a8 | | — |
+| 4 | Add vercel.json for static Vite SPA deployment (build/output config + SPA rewrite fallback) | 2026-09-09 | 4ec0dc3 | | — |
+| 5 | From the Add Deal modal, remove the Value input field, but keep the default value at 0 (already calculated from sub-items) | 2026-09-09 | ceb9a7c | | .planning/quick/260909-o2k-from-the-add-deal-modal-remove-the-value |
+| 6 | Add Customer Type, Confidence Level, and financial metric fields (ARPU/MRR/ARR/Lifetime Contract Value) to the Add Deal wizard's step 2 | 2026-09-10 | 85a7ff2 | Needs Review | .planning/quick/260910-ec8-add-three-new-field-groups-to-the-add-de |
 
 ### Roadmap Evolution
 
