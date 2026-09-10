@@ -29,11 +29,17 @@ export function computeArr(deal: Pick<Deal, "value" | "frequency">): number {
   return computeMrr(deal) * 12;
 }
 
-/** Lifetime Contract Value — MRR x the deal's contract term in months. */
+/**
+ * Lifetime Contract Value — MRR x the deal's contract term in months.
+ * Returns `null` (never a misleading $0) when `contractTermMonths` is 0 —
+ * per Phase 3's convention, 0 there means "not yet set", not a genuine
+ * zero-length contract. Callers must branch on `null` and render an
+ * empty-cell placeholder, same as `computeArpu`.
+ */
 export function computeLifetimeContractValue(
   deal: Pick<Deal, "value" | "frequency" | "contractTermMonths">,
-): number {
-  return computeMrr(deal) * deal.contractTermMonths;
+): number | null {
+  return deal.contractTermMonths === 0 ? null : computeMrr(deal) * deal.contractTermMonths;
 }
 
 /**

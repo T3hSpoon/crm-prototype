@@ -69,7 +69,10 @@ const columns = [
   columnHelper.display({
     id: "lifetimeContractValue",
     header: "Lifetime Contract Value",
-    cell: (info) => currencyFormatter.format(computeLifetimeContractValue(info.row.original)),
+    cell: (info) => {
+      const ltv = computeLifetimeContractValue(info.row.original);
+      return ltv === null ? "—" : currencyFormatter.format(ltv);
+    },
   }),
   columnHelper.display({
     id: "arpu",
