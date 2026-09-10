@@ -17,9 +17,16 @@ import { LineItemsTable } from "@/features/pipeline/components/LineItemsTable";
 import type { Deal } from "@/shared/types/deal";
 import { toPipelineGroup } from "@/shared/utils/pipeline-group";
 import { hasManualOverride } from "@/shared/utils/line-items";
+import { computeArpu, computeArr, computeLifetimeContractValue, computeMrr } from "@/shared/utils/deal-metrics";
 import { cn } from "@/lib/utils";
 
 const columnHelper = legacyCreateColumnHelper<Deal>();
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
 
 const columns = [
   columnHelper.accessor("name", {
@@ -48,6 +55,29 @@ const columns = [
     cell: (info) => (
       <EditableCell dealId={info.row.original.id} columnId="closeDate" value={info.getValue()} />
     ),
+  }),
+  columnHelper.display({
+    id: "mrr",
+    header: "MRR",
+    cell: (info) => currencyFormatter.format(computeMrr(info.row.original)),
+  }),
+  columnHelper.display({
+    id: "arr",
+    header: "ARR",
+    cell: (info) => currencyFormatter.format(computeArr(info.row.original)),
+  }),
+  columnHelper.display({
+    id: "lifetimeContractValue",
+    header: "Lifetime Contract Value",
+    cell: (info) => currencyFormatter.format(computeLifetimeContractValue(info.row.original)),
+  }),
+  columnHelper.display({
+    id: "arpu",
+    header: "ARPU",
+    cell: (info) => {
+      const arpu = computeArpu(info.row.original);
+      return arpu === null ? "—" : currencyFormatter.format(arpu);
+    },
   }),
   columnHelper.display({
     id: "stage",
