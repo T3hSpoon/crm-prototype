@@ -17,7 +17,7 @@ import { LineItemsTable } from "@/features/pipeline/components/LineItemsTable";
 import type { Deal } from "@/shared/types/deal";
 import { toPipelineGroup } from "@/shared/utils/pipeline-group";
 import { hasManualOverride } from "@/shared/utils/line-items";
-import { computeArpu, computeArr, computeLifetimeContractValue, computeMrr } from "@/shared/utils/deal-metrics";
+import { computeLifetimeContractValue } from "@/shared/utils/deal-metrics";
 import { cn } from "@/lib/utils";
 
 const columnHelper = legacyCreateColumnHelper<Deal>();
@@ -57,30 +57,9 @@ const columns = [
     ),
   }),
   columnHelper.display({
-    id: "mrr",
-    header: "MRR",
-    cell: (info) => currencyFormatter.format(computeMrr(info.row.original)),
-  }),
-  columnHelper.display({
-    id: "arr",
-    header: "ARR",
-    cell: (info) => currencyFormatter.format(computeArr(info.row.original)),
-  }),
-  columnHelper.display({
     id: "lifetimeContractValue",
     header: "Lifetime Contract Value",
-    cell: (info) => {
-      const ltv = computeLifetimeContractValue(info.row.original);
-      return ltv === null ? "—" : currencyFormatter.format(ltv);
-    },
-  }),
-  columnHelper.display({
-    id: "arpu",
-    header: "ARPU",
-    cell: (info) => {
-      const arpu = computeArpu(info.row.original);
-      return arpu === null ? "—" : currencyFormatter.format(arpu);
-    },
+    cell: (info) => currencyFormatter.format(computeLifetimeContractValue(info.row.original)),
   }),
   columnHelper.display({
     id: "stage",

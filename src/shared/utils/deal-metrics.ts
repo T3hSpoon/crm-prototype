@@ -1,55 +1,50 @@
 import type { Deal } from "@/shared/types/deal";
+import { computeSubtotal } from "@/shared/utils/line-items";
 
 /**
  * Pure, never-stored derived-value functions for a deal's billing/financial
- * metrics (Quick task 260910-fl6). Mirrors `line-items.ts`'s existing
- * derived-value module shape: no side effects, no store/repository imports.
- * MRR, ARR, Lifetime Contract Value, and ARPU are never stored fields on
- * `Deal` — they are always computed here at render time from `value`,
- * `frequency`, `contractTermMonths`, and `lineItems`, so they can never go
- * stale relative to those fields.
+ * metrics (Quick task 260910-gpd, correcting 260910-fl6). Mirrors
+ * `line-items.ts`'s existing derived-value module shape: no side effects, no
+ * store/repository imports. MRR, ARR, and Lifetime Contract Value are never
+ * stored fields on `Deal` — they are always computed here at render time
+ * from each line item's `type` (product vs service), `units`, and
+ * `unitPrice`, plus `contractTermMonths`, so they can never go stale relative
+ * to those fields. `Deal.value`/`Deal.frequency` play no role in these
+ * formulas (both fields remain on `Deal` for other purposes). MRR/ARR are no
+ * longer rendered as pipeline-table columns (per later correction), but stay
+ * exported here since the underlying calculations remain valid and may be
+ * used again. ARPU was removed entirely (calculation and column).
  */
 
-/** Number of months in each billing frequency's period. */
-const PERIOD_MONTHS: Record<Deal["frequency"], number> = {
-  monthly: 1,
-  quarterly: 3,
-  quadrimestral: 4,
-  "semi-annual": 6,
-  annually: 12,
-};
-
-/** Monthly Recurring Revenue — value normalized to a monthly rate. */
-export function computeMrr(deal: Pick<Deal, "value" | "frequency">): number {
-  return deal.value / PERIOD_MONTHS[deal.frequency];
+/**
+ * Monthly Recurring Revenue — the sum of `units x unitPrice` across only the
+ * deal's `type: "service"` line items. Product-type line items contribute $0
+ * to MRR.
+ */
+export function computeMrr(deal: Pick<Deal, "lineItems">): number {
+  return deal.lineItems
+    .filter((item) => item.type === "service")
+    .reduce((sum, item) => sum + computeSubtotal(item), 0);
 }
 
 /** Annual Recurring Revenue — MRR x 12. */
-export function computeArr(deal: Pick<Deal, "value" | "frequency">): number {
+export function computeArr(deal: Pick<Deal, "lineItems">): number {
   return computeMrr(deal) * 12;
 }
 
 /**
- * Lifetime Contract Value — MRR x the deal's contract term in months.
- * Returns `null` (never a misleading $0) when `contractTermMonths` is 0 —
- * per Phase 3's convention, 0 there means "not yet set", not a genuine
- * zero-length contract. Callers must branch on `null` and render an
- * empty-cell placeholder, same as `computeArpu`.
+ * Lifetime Contract Value — the sum of the deal's `type: "product"` line
+ * items' subtotals (a one-time purchase total) plus MRR x the deal's
+ * contract term in months (the recurring service revenue accrued over the
+ * full term). Always a real number, never `null` — even when
+ * `contractTermMonths` is 0, the product-purchase portion is still a
+ * genuine, meaningful value (only the recurring-service addend becomes $0).
  */
 export function computeLifetimeContractValue(
-  deal: Pick<Deal, "value" | "frequency" | "contractTermMonths">,
-): number | null {
-  return deal.contractTermMonths === 0 ? null : computeMrr(deal) * deal.contractTermMonths;
-}
-
-/**
- * Average Revenue Per Unit — value divided by the total units across the
- * deal's line items. Returns `null` (never 0/NaN/Infinity) when the deal has
- * zero line items — there is no unit basis to divide by. Callers must branch
- * on `null` and render an empty-cell placeholder instead of a computed
- * number.
- */
-export function computeArpu(deal: Pick<Deal, "value" | "lineItems">): number | null {
-  const totalUnits = deal.lineItems.reduce((sum, item) => sum + item.units, 0);
-  return totalUnits === 0 ? null : deal.value / totalUnits;
+  deal: Pick<Deal, "lineItems" | "contractTermMonths">,
+): number {
+  const productSubtotal = deal.lineItems
+    .filter((item) => item.type === "product")
+    .reduce((sum, item) => sum + computeSubtotal(item), 0);
+  return productSubtotal + computeMrr(deal) * deal.contractTermMonths;
 }
