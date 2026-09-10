@@ -48,30 +48,6 @@ export const addDealStep2Schema = z.object({
   confidenceLevel: z.enum(["100", "80", "50", "open-to-rfp"], {
     message: "Confidence Level is required",
   }),
-  arpu: z.coerce
-    .number()
-    .nonnegative("ARPU must be zero or positive")
-    .max(1_000_000, "ARPU must be 1,000,000 or fewer")
-    .optional(),
-  mrr: z.coerce
-    .number()
-    .nonnegative("MRR must be zero or positive")
-    .max(10_000_000, "MRR must be 10,000,000 or fewer")
-    .optional(),
-  // Sized to MRR's max x 12, so the wizard's auto-calc effect can never
-  // write a value this schema then rejects.
-  arr: z.coerce
-    .number()
-    .nonnegative("ARR must be zero or positive")
-    .max(120_000_000, "ARR must be 120,000,000 or fewer")
-    .optional(),
-  // Sized to MRR's max x contractTermMonths' existing 600-month max, for
-  // the same reason as `arr` above.
-  lifetimeContractValue: z.coerce
-    .number()
-    .nonnegative("Lifetime Contract Value must be zero or positive")
-    .max(6_000_000_000, "Lifetime Contract Value must be 6,000,000,000 or fewer")
-    .optional(),
 });
 
 /**

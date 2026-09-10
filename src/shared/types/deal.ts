@@ -77,16 +77,15 @@ export interface Deal {
   frequency: DealFrequency;
   currency: DealCurrency;
   /**
-   * Customer Type / Confidence Level / financial metrics captured via the
-   * Add Deal wizard's step 2 (Quick task 260910-ec8). The four financial
-   * fields are optional — early-stage deals often lack firm numbers yet.
+   * Customer Type / Confidence Level captured via the Add Deal wizard's
+   * step 2 (Quick task 260910-ec8). MRR/ARR/Lifetime Contract Value/ARPU are
+   * intentionally not fields here — they are derived on demand by
+   * `src/shared/utils/deal-metrics.ts` (Quick task 260910-fl6) from `value`/
+   * `frequency`/`contractTermMonths`/`lineItems`, so they can never go stale
+   * relative to those fields.
    */
   customerType: CustomerType;
   confidenceLevel: ConfidenceLevel;
-  arpu?: number;
-  mrr?: number;
-  arr?: number;
-  lifetimeContractValue?: number;
 }
 
 /**
@@ -108,14 +107,13 @@ export interface NewDealInput {
   frequency: DealFrequency;
   currency: DealCurrency;
   /**
-   * Customer Type / Confidence Level / financial metrics captured via the
-   * Add Deal wizard's step 2 (Quick task 260910-ec8). The four financial
-   * fields are optional — early-stage deals often lack firm numbers yet.
+   * Customer Type / Confidence Level captured via the Add Deal wizard's
+   * step 2 (Quick task 260910-ec8). MRR/ARR/Lifetime Contract Value/ARPU are
+   * intentionally not fields here — they are derived on demand by
+   * `src/shared/utils/deal-metrics.ts` (Quick task 260910-fl6) from `value`/
+   * `frequency`/`contractTermMonths`/`lineItems`, so they can never go stale
+   * relative to those fields.
    */
   customerType: CustomerType;
   confidenceLevel: ConfidenceLevel;
-  arpu?: number;
-  mrr?: number;
-  arr?: number;
-  lifetimeContractValue?: number;
 }
