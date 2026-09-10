@@ -6,7 +6,7 @@ status: planning
 stopped_at: Phase 03 complete, ready to plan Phase 03.1
 last_updated: "2026-09-09T14:16:34.791Z"
 last_activity: 2026-09-09
-last_activity_desc: Completed quick task 260910-ec8 - Add Customer Type/Confidence Level/financial fields to Add Deal step 2 (needs review)
+last_activity_desc: Completed quick task 260910-fl6 - Move ARPU/MRR/ARR/Lifetime Contract Value from Add Deal wizard to computed pipeline table columns
 state_head: beab3e1a4db41c85929991b7c9917f23891927a6
 progress:
   total_phases: 5
@@ -105,7 +105,8 @@ None yet.
 | 3 | Replace UUID-format deal ID generation with a plain 10-digit numeric-string ID format | 2026-09-08 | 55653a8 | | — |
 | 4 | Add vercel.json for static Vite SPA deployment (build/output config + SPA rewrite fallback) | 2026-09-09 | 4ec0dc3 | | — |
 | 5 | From the Add Deal modal, remove the Value input field, but keep the default value at 0 (already calculated from sub-items) | 2026-09-09 | ceb9a7c | | .planning/quick/260909-o2k-from-the-add-deal-modal-remove-the-value |
-| 6 | Add Customer Type, Confidence Level, and financial metric fields (ARPU/MRR/ARR/Lifetime Contract Value) to the Add Deal wizard's step 2 | 2026-09-10 | 85a7ff2 | Needs Review | .planning/quick/260910-ec8-add-three-new-field-groups-to-the-add-de |
+| 6 | Add Customer Type, Confidence Level, and financial metric fields (ARPU/MRR/ARR/Lifetime Contract Value) to the Add Deal wizard's step 2 | 2026-09-10 | 85a7ff2 | Needs Review (financial fields superseded by #7) | .planning/quick/260910-ec8-add-three-new-field-groups-to-the-add-de |
+| 7 | Move ARPU/MRR/ARR/Lifetime Contract Value out of the Add Deal wizard (correction to #6) — now purely computed from Value/Frequency/Contract Term/line-item units and shown as new columns in the pipeline table | 2026-09-10 | 7cc9dc8 | Verified | .planning/quick/260910-fl6-remove-the-arpu-mrr-arr-and-lifetime-con |
 
 ### Roadmap Evolution
 
