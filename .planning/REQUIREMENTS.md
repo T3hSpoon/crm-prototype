@@ -27,8 +27,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Lost Tracking
 
-- [ ] **LOST-01**: User can mark a deal as lost, which requires selecting or entering a reason before the move completes
-- [ ] **LOST-02**: A lost deal moves to a separate Lost group, distinct from active pipeline stages
+- [x] **LOST-01**: User can mark a deal as lost, which requires selecting or entering a reason before the move completes
+- [x] **LOST-02**: A lost deal moves to a separate Lost group, distinct from active pipeline stages
 
 ### Won Tracking
 
@@ -85,8 +85,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEAL-04 | Phase 2 | Complete |
 | DEAL-05 | Phase 2 | Complete |
 | DEAL-06 | Phase 3 | Complete |
-| LOST-01 | Phase 3.1 | Pending |
-| LOST-02 | Phase 3.1 | Pending |
+| LOST-01 | Phase 3.1 | Complete |
+| LOST-02 | Phase 3.1 | Complete |
 | WON-01 | Phase 3.1 | Pending |
 | FCST-01 | Phase 4 | Pending |
 | FCST-02 | Phase 4 | Pending |
