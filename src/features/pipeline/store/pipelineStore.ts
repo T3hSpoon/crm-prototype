@@ -72,14 +72,23 @@ export const usePipelineStore = create<PipelineState>()((set, get) => ({
   },
 
   moveToWon: async (dealId, terms) => {
-    const current = get().deals.find((d) => d.id === dealId);
-    const patch = {
-      ...fromPipelineGroup("won", current?.pipelineStage),
-      ...terms,
-    };
-    const updated = await dealsRepository.update(dealId, patch);
-    // Replace by id, never by array index (research/PITFALLS.md Pitfall 5).
-    set({ deals: get().deals.map((d) => (d.id === dealId ? updated : d)) });
+    try {
+      const current = get().deals.find((d) => d.id === dealId);
+      const patch = {
+        ...fromPipelineGroup("won", current?.pipelineStage),
+        ...terms,
+      };
+      const updated = await dealsRepository.update(dealId, patch);
+      // Replace by id, never by array index (research/PITFALLS.md Pitfall 5).
+      set({ deals: get().deals.map((d) => (d.id === dealId ? updated : d)) });
+    } catch (err) {
+      // Mirrors updateDeal's log+rethrow pattern — WonContractTermsDialog's
+      // catch block shows the inline error copy and keeps the dialog open
+      // with the user's entered values intact (Task 2, UI-SPEC error-state
+      // contract).
+      console.error("moveToWon failed", err);
+      throw err;
+    }
   },
 
   updateDeal: async (id, patch) => {

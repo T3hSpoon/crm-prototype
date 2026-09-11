@@ -93,7 +93,7 @@ export function GroupSection({ group, deals }: GroupSectionProps) {
         </span>
       </header>
       <div className="p-3">
-        <DealTable deals={deals} />
+        <DealTable group={group} deals={deals} />
       </div>
     </section>
   );

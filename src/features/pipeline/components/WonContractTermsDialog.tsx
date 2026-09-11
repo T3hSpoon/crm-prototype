@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addMonths, format, parseISO } from "date-fns";
@@ -17,6 +17,7 @@ import {
   wonContractTermsSchema,
   type WonContractTermsFormValues,
 } from "@/features/pipeline/components/won-contract-terms-schema";
+import { UPDATE_FAILED_MESSAGE } from "@/features/pipeline/constants";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -49,6 +50,7 @@ export function WonContractTermsDialog({ dealId, open, onOpenChange }: WonContra
     resolver: zodResolver(wonContractTermsSchema),
     defaultValues: DEFAULT_VALUES,
   });
+  const [error, setError] = useState<string | null>(null);
 
   const startDate = form.watch("contractStartDate");
   useEffect(() => {
@@ -62,14 +64,22 @@ export function WonContractTermsDialog({ dealId, open, onOpenChange }: WonContra
   }, [startDate, deal]);
 
   const onSubmit = async (values: WonContractTermsFormValues) => {
-    await usePipelineStore.getState().moveToWon(dealId, values);
-    form.reset(DEFAULT_VALUES);
-    onOpenChange(false);
+    setError(null);
+    try {
+      await usePipelineStore.getState().moveToWon(dealId, values);
+      form.reset(DEFAULT_VALUES);
+      onOpenChange(false);
+    } catch {
+      // Keep the dialog open with the user's entered values intact — never
+      // close or reset on a failed submit (UI-SPEC error-state contract).
+      setError(UPDATE_FAILED_MESSAGE);
+    }
   };
 
   const handleOpenChange = (next: boolean) => {
     if (!next) {
       form.reset(DEFAULT_VALUES);
+      setError(null);
     }
     onOpenChange(next);
   };
@@ -139,6 +149,7 @@ export function WonContractTermsDialog({ dealId, open, onOpenChange }: WonContra
               </div>
             </Field>
           </FieldGroup>
+          {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel

@@ -14,7 +14,7 @@ import { ChevronRight } from "lucide-react";
 import { StageSelect } from "@/features/pipeline/components/StageSelect";
 import { EditableCell } from "@/features/pipeline/components/EditableCell";
 import { LineItemsTable } from "@/features/pipeline/components/LineItemsTable";
-import type { Deal } from "@/shared/types/deal";
+import type { Deal, PipelineGroup } from "@/shared/types/deal";
 import { toPipelineGroup } from "@/shared/utils/pipeline-group";
 import { hasManualOverride } from "@/shared/utils/line-items";
 import { computeLifetimeContractValue } from "@/shared/utils/deal-metrics";
@@ -79,6 +79,7 @@ const columns = [
 
 interface DealTableProps {
   deals: Deal[];
+  group: PipelineGroup;
 }
 
 /**
@@ -88,7 +89,7 @@ interface DealTableProps {
  * GroupSection already owns its own pre-partitioned `deals` slice (see
  * usePipelineGroups / 01-RESEARCH.md Pattern 1).
  */
-export function DealTable({ deals }: DealTableProps) {
+export function DealTable({ deals, group }: DealTableProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const toggleExpanded = (dealId: string) => {
@@ -156,7 +157,7 @@ export function DealTable({ deals }: DealTableProps) {
                 colSpan={tableColumns.length}
                 className="px-4 py-6 text-center text-muted-foreground"
               >
-                No deals in this group yet.
+                {group === "won" ? "No contracts yet." : "No deals in this group yet."}
               </td>
             </tr>
           ) : (
