@@ -11,7 +11,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **PIPE-01**: User can view deals grouped by pipeline stage (Prospect, Lead, Opportunity, Deal/Won, Lost)
 - [x] **PIPE-02**: User can move a deal from one pipeline stage to another
-- [ ] **PIPE-03**: Won deals appear as a distinct group that serves as the "contracts made so far" list
+- [x] **PIPE-03**: Won deals appear as a distinct group that serves as the "contracts made so far" list
 - [ ] **PIPE-04**: User can search deals by name/company across the pipeline table
 - [ ] **PIPE-05**: User can filter the pipeline table by owner, value, stage, or close date
 - [ ] **PIPE-06**: User can sort the pipeline table by column (value, close date, owner)
@@ -32,7 +32,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Won Tracking
 
-- [ ] **WON-01**: Marking a deal as Won requires completing a contract terms form (start date, end date/term length, signed date, payment terms, final contract value) before the deal is added to the contracts list
+- [x] **WON-01**: Marking a deal as Won requires completing a contract terms form (start date, end date/term length, signed date, payment terms, final contract value) before the deal is added to the contracts list
 
 ### Forecast
 
@@ -75,7 +75,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | PIPE-01 | Phase 1 | Complete |
 | PIPE-02 | Phase 1 | Complete |
-| PIPE-03 | Phase 3.1 | Pending |
+| PIPE-03 | Phase 3.1 | Complete |
 | PIPE-04 | Phase 4 | Pending |
 | PIPE-05 | Phase 4 | Pending |
 | PIPE-06 | Phase 4 | Pending |
@@ -87,7 +87,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEAL-06 | Phase 3 | Complete |
 | LOST-01 | Phase 3.1 | Complete |
 | LOST-02 | Phase 3.1 | Complete |
-| WON-01 | Phase 3.1 | Pending |
+| WON-01 | Phase 3.1 | Complete |
 | FCST-01 | Phase 4 | Pending |
 | FCST-02 | Phase 4 | Pending |
 
