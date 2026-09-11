@@ -64,7 +64,11 @@ export interface Deal {
   closeDate: string;
   pipelineStage: PipelineStage;
   outcome: DealOutcome;
-  /** Unused in Phase 1 UI; field exists so Phase 3's lost-reason gate needs no migration. */
+  /**
+   * Selected reason category (D-03), optionally with a free-text note
+   * appended as `'{category}: {note}'`, set by moveToLost when a deal is
+   * marked Lost via StageSelect (Phase 3.1, LOST-01/LOST-02).
+   */
   lostReason?: string;
   /** ISO 8601 */
   createdAt: string;

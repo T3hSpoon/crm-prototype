@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -38,10 +40,18 @@ export function LostReasonPopover({ dealId, onClose }: LostReasonPopoverProps) {
   const form = useForm<LostReasonFormValues>({
     resolver: zodResolver(lostReasonSchema),
   });
+  const [error, setError] = useState<string | null>(null);
 
   const onSubmit = async (values: LostReasonFormValues) => {
-    await usePipelineStore.getState().moveToLost(dealId, values.category, values.note || undefined);
-    onClose();
+    setError(null);
+    try {
+      await usePipelineStore.getState().moveToLost(dealId, values.category, values.note || undefined);
+      onClose();
+    } catch {
+      // Keep the popover open with the user's selections intact — never
+      // close or reset on a failed submit (UI-SPEC error-state contract).
+      setError("Couldn't save — try again.");
+    }
   };
 
   return (
@@ -71,9 +81,21 @@ export function LostReasonPopover({ dealId, onClose }: LostReasonPopoverProps) {
             </Field>
           )}
         />
+        <Controller
+          name="note"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Note (optional)</FieldLabel>
+              <Textarea {...field} id={field.name} aria-invalid={fieldState.invalid} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
         <Button type="submit" disabled={!form.watch("category")}>
           Mark as Lost
         </Button>
+        {error && <p className="text-sm text-destructive">{error}</p>}
       </form>
     </div>
   );
