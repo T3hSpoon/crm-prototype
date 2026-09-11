@@ -7,6 +7,7 @@ import type { Deal, DealOutcome, PipelineGroup, PipelineStage } from "@/shared/t
  * 01-RESEARCH.md Pattern 2).
  */
 export function toPipelineGroup(deal: Deal): PipelineGroup {
+  if (deal.outcome === "won") return "won";
   return deal.outcome === "lost" ? "lost" : deal.pipelineStage;
 }
 
@@ -26,6 +27,9 @@ export function fromPipelineGroup(
 ): { pipelineStage: PipelineStage; outcome: DealOutcome } {
   if (group === "lost") {
     return { pipelineStage: previousStage ?? "prospect", outcome: "lost" };
+  }
+  if (group === "won") {
+    return { pipelineStage: previousStage ?? "deal", outcome: "won" };
   }
   return { pipelineStage: group, outcome: "open" };
 }

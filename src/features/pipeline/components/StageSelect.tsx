@@ -8,15 +8,22 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { LostReasonPopover } from "@/features/pipeline/components/LostReasonPopover";
+import { WonContractTermsDialog } from "@/features/pipeline/components/WonContractTermsDialog";
 import { usePipelineStore } from "@/features/pipeline/store/pipelineStore";
 import type { PipelineGroup } from "@/shared/types/deal";
 
-/** Same 5 labeled stage options AddDealDialog's stage selector uses. */
+/**
+ * The 6 labeled stage options this dropdown offers. AddDealDialog's own
+ * stage selector is out of this plan's scope and still lists only the
+ * original 5 ("Deal / Won") — a new deal is never created directly as Won
+ * this phase (03.1-RESEARCH.md Anti-Patterns).
+ */
 const GROUP_OPTIONS: { value: PipelineGroup; label: string }[] = [
   { value: "prospect", label: "Prospect" },
   { value: "lead", label: "Lead" },
   { value: "opportunity", label: "Opportunity" },
-  { value: "deal", label: "Deal / Won" },
+  { value: "deal", label: "Deal" },
+  { value: "won", label: "Won" },
   { value: "lost", label: "Lost" },
 ];
 
@@ -33,11 +40,15 @@ interface StageSelectProps {
  * Phase 2+ fast-follow using the classic dnd-kit packages already installed).
  */
 export function StageSelect({ dealId, currentGroup }: StageSelectProps) {
-  const [pendingGroup, setPendingGroup] = useState<"lost" | null>(null);
+  const [pendingGroup, setPendingGroup] = useState<"lost" | "won" | null>(null);
 
   const handleValueChange = (group: PipelineGroup) => {
     if (group === "lost") {
       setPendingGroup("lost");
+      return;
+    }
+    if (group === "won") {
+      setPendingGroup("won");
       return;
     }
     void usePipelineStore.getState().moveStage(dealId, group);
@@ -79,6 +90,9 @@ export function StageSelect({ dealId, currentGroup }: StageSelectProps) {
           )}
         </PopoverContent>
       </Popover>
+      {pendingGroup === "won" && (
+        <WonContractTermsDialog dealId={dealId} open onOpenChange={() => setPendingGroup(null)} />
+      )}
     </div>
   );
 }

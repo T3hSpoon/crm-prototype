@@ -3,12 +3,12 @@ import { usePipelineStore } from "@/features/pipeline/store/pipelineStore";
 import type { Deal, PipelineGroup } from "@/shared/types/deal";
 import { toPipelineGroup } from "@/shared/utils/pipeline-group";
 
-/** Fixed display order for the 5 pipeline-stage groups (never derived, never reordered). */
-export const GROUPS: PipelineGroup[] = ["prospect", "lead", "opportunity", "deal", "lost"];
+/** Fixed display order for the 6 pipeline-stage groups (never derived, never reordered). */
+export const GROUPS: PipelineGroup[] = ["prospect", "lead", "opportunity", "deal", "won", "lost"];
 
 /**
- * Selector hook: partitions the store's flat `deals` list into the 5 fixed
- * pipeline groups. All 5 keys are always present in the returned record,
+ * Selector hook: partitions the store's flat `deals` list into the 6 fixed
+ * pipeline groups. All 6 keys are always present in the returned record,
  * even when a group currently has zero deals — see 01-RESEARCH.md
  * Architecture Patterns Pattern 1 (pre-partition, not `getGroupedRowModel`).
  *
