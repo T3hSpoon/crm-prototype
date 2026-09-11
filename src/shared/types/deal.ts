@@ -15,10 +15,10 @@ export type PipelineStage = "prospect" | "lead" | "opportunity" | "deal";
 export type DealOutcome = "open" | "won" | "lost";
 
 /**
- * The 5 UI groups the pipeline board renders. Always derived from
+ * The 6 UI groups the pipeline board renders. Always derived from
  * `pipelineStage` + `outcome` via `toPipelineGroup` — never stored directly.
  */
-export type PipelineGroup = "prospect" | "lead" | "opportunity" | "deal" | "lost";
+export type PipelineGroup = "prospect" | "lead" | "opportunity" | "deal" | "won" | "lost";
 
 /** Whether a deal's line item is a product or a service. */
 export type LineItemType = "product" | "service";
@@ -70,6 +70,16 @@ export interface Deal {
    * marked Lost via StageSelect (Phase 3.1, LOST-01/LOST-02).
    */
   lostReason?: string;
+  /**
+   * ISO 8601 date strings (contractStartDate/contractEndDate/
+   * contractSignedDate) and free-text paymentTerms, all optional and only
+   * ever set together by moveToWon when a deal transitions to Won (Phase
+   * 3.1, WON-01).
+   */
+  contractStartDate?: string;
+  contractEndDate?: string;
+  contractSignedDate?: string;
+  paymentTerms?: string;
   /** ISO 8601 */
   createdAt: string;
   /** Product/service composition (Phase 2, DEAL-04). Starts empty at creation. */

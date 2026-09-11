@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { CircleX, Handshake, Target, Trophy, UserPlus } from "lucide-react";
+import { Briefcase, CircleX, Handshake, Target, Trophy, UserPlus } from "lucide-react";
 import { DealTable } from "@/features/pipeline/components/DealTable";
 import type { Deal, PipelineGroup } from "@/shared/types/deal";
 import { cn } from "@/lib/utils";
@@ -39,10 +39,16 @@ const GROUP_META: Record<
     tint: "bg-cyan-50/60 dark:bg-cyan-950/20",
   },
   deal: {
-    label: "Deal / Won",
-    icon: Trophy,
+    label: "Deal",
+    icon: Briefcase,
     accent: "border-l-emerald-400",
     tint: "bg-emerald-50/60 dark:bg-emerald-950/20",
+  },
+  won: {
+    label: "Contracts",
+    icon: Trophy,
+    accent: "border-l-yellow-400",
+    tint: "bg-yellow-50/60 dark:bg-yellow-950/20",
   },
   lost: {
     label: "Lost",
@@ -87,7 +93,7 @@ export function GroupSection({ group, deals }: GroupSectionProps) {
         </span>
       </header>
       <div className="p-3">
-        <DealTable deals={deals} />
+        <DealTable group={group} deals={deals} />
       </div>
     </section>
   );

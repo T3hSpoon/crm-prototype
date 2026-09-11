@@ -3,6 +3,7 @@ import { dealsRepository } from "@/data";
 import type { Deal, NewDealInput, PipelineGroup } from "@/shared/types/deal";
 import { fromPipelineGroup } from "@/shared/utils/pipeline-group";
 import type { LostReasonFormValues } from "@/features/pipeline/components/lost-reason-schema";
+import type { WonContractTermsFormValues } from "@/features/pipeline/components/won-contract-terms-schema";
 
 interface PipelineState {
   deals: Deal[];
@@ -15,6 +16,7 @@ interface PipelineState {
     category: LostReasonFormValues["category"],
     note?: string,
   ) => Promise<void>;
+  moveToWon: (dealId: string, terms: WonContractTermsFormValues) => Promise<void>;
   updateDeal: (
     id: string,
     patch: Partial<Pick<Deal, "name" | "value" | "owner" | "closeDate" | "lineItems">>,
@@ -65,6 +67,26 @@ export const usePipelineStore = create<PipelineState>()((set, get) => ({
       // block shows the inline error copy and keeps the popover open with
       // the user's selections intact (Task 2, UI-SPEC error-state contract).
       console.error("moveToLost failed", err);
+      throw err;
+    }
+  },
+
+  moveToWon: async (dealId, terms) => {
+    try {
+      const current = get().deals.find((d) => d.id === dealId);
+      const patch = {
+        ...fromPipelineGroup("won", current?.pipelineStage),
+        ...terms,
+      };
+      const updated = await dealsRepository.update(dealId, patch);
+      // Replace by id, never by array index (research/PITFALLS.md Pitfall 5).
+      set({ deals: get().deals.map((d) => (d.id === dealId ? updated : d)) });
+    } catch (err) {
+      // Mirrors updateDeal's log+rethrow pattern — WonContractTermsDialog's
+      // catch block shows the inline error copy and keeps the dialog open
+      // with the user's entered values intact (Task 2, UI-SPEC error-state
+      // contract).
+      console.error("moveToWon failed", err);
       throw err;
     }
   },
