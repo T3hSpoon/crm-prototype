@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -5,6 +6,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
+import { LostReasonPopover } from "@/features/pipeline/components/LostReasonPopover";
 import { usePipelineStore } from "@/features/pipeline/store/pipelineStore";
 import type { PipelineGroup } from "@/shared/types/deal";
 
@@ -30,7 +33,13 @@ interface StageSelectProps {
  * Phase 2+ fast-follow using the classic dnd-kit packages already installed).
  */
 export function StageSelect({ dealId, currentGroup }: StageSelectProps) {
+  const [pendingGroup, setPendingGroup] = useState<"lost" | null>(null);
+
   const handleValueChange = (group: PipelineGroup) => {
+    if (group === "lost") {
+      setPendingGroup("lost");
+      return;
+    }
     void usePipelineStore.getState().moveStage(dealId, group);
   };
 
@@ -39,18 +48,37 @@ export function StageSelect({ dealId, currentGroup }: StageSelectProps) {
     // does not stop propagation itself, and the row now opens the detail
     // drawer on click.
     <div onClick={(e) => e.stopPropagation()}>
-      <Select value={currentGroup} onValueChange={handleValueChange}>
-        <SelectTrigger size="sm" aria-label="Move deal to stage">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {GROUP_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <Popover
+        open={pendingGroup === "lost"}
+        onOpenChange={(open) => {
+          // Escape/click-away dismissal (D-04) — clears local state only,
+          // never calls a store action. `Select`'s value stays bound to
+          // currentGroup, so it reverts automatically.
+          if (!open) setPendingGroup(null);
+        }}
+      >
+        <PopoverAnchor asChild>
+          <div>
+            <Select value={currentGroup} onValueChange={handleValueChange}>
+              <SelectTrigger size="sm" aria-label="Move deal to stage">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {GROUP_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </PopoverAnchor>
+        <PopoverContent>
+          {pendingGroup === "lost" && (
+            <LostReasonPopover dealId={dealId} onClose={() => setPendingGroup(null)} />
+          )}
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
