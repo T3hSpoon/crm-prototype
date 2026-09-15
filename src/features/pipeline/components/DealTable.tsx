@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
+import type { ColumnFiltersState, OnChangeFn, SortingState } from "@tanstack/react-table";
 import { flexRender } from "@tanstack/react-table";
 // TanStack Table v9.2.3 replaced the v8 useReactTable/createColumnHelper API
 // with a new features-based useTable hook (see @tanstack/react-table's
@@ -12,6 +13,7 @@ import { flexRender } from "@tanstack/react-table";
 import {
   getCoreRowModel,
   getFilteredRowModel,
+  getSortedRowModel,
   legacyCreateColumnHelper,
   useLegacyTable,
 } from "@tanstack/react-table/legacy";
@@ -46,22 +48,52 @@ const columns = [
     enableGlobalFilter: true,
   }),
   columnHelper.accessor("value", {
-    header: "Value",
+    header: ({ column }) => (
+      <button
+        type="button"
+        className={cn("flex items-center gap-1", column.getIsSorted() && "text-primary")}
+        onClick={column.getToggleSortingHandler()}
+      >
+        Value
+        {column.getIsSorted() === "asc" ? " ▲" : column.getIsSorted() === "desc" ? " ▼" : ""}
+      </button>
+    ),
     enableGlobalFilter: false,
+    filterFn: "inNumberRange",
     cell: (info) => (
       <EditableCell dealId={info.row.original.id} columnId="value" value={info.getValue()} />
     ),
   }),
   columnHelper.accessor("owner", {
-    header: "Owner",
+    header: ({ column }) => (
+      <button
+        type="button"
+        className={cn("flex items-center gap-1", column.getIsSorted() && "text-primary")}
+        onClick={column.getToggleSortingHandler()}
+      >
+        Owner
+        {column.getIsSorted() === "asc" ? " ▲" : column.getIsSorted() === "desc" ? " ▼" : ""}
+      </button>
+    ),
     enableGlobalFilter: false,
+    filterFn: "equalsString",
     cell: (info) => (
       <EditableCell dealId={info.row.original.id} columnId="owner" value={info.getValue()} />
     ),
   }),
   columnHelper.accessor("closeDate", {
-    header: "Close Date",
+    header: ({ column }) => (
+      <button
+        type="button"
+        className={cn("flex items-center gap-1", column.getIsSorted() && "text-primary")}
+        onClick={column.getToggleSortingHandler()}
+      >
+        Close Date
+        {column.getIsSorted() === "asc" ? " ▲" : column.getIsSorted() === "desc" ? " ▼" : ""}
+      </button>
+    ),
     enableGlobalFilter: false,
+    filterFn: "inDateRange",
     cell: (info) => (
       <EditableCell dealId={info.row.original.id} columnId="closeDate" value={info.getValue()} />
     ),
@@ -94,6 +126,9 @@ interface DealTableProps {
   deals: Deal[];
   group: PipelineGroup;
   globalFilter: string;
+  columnFilters: ColumnFiltersState;
+  sorting: SortingState;
+  onSortingChange: OnChangeFn<SortingState>;
   onVisibleRowsChange?: (rows: Deal[]) => void;
 }
 
@@ -104,7 +139,15 @@ interface DealTableProps {
  * GroupSection already owns its own pre-partitioned `deals` slice (see
  * usePipelineGroups / 01-RESEARCH.md Pattern 1).
  */
-export function DealTable({ deals, group, globalFilter, onVisibleRowsChange }: DealTableProps) {
+export function DealTable({
+  deals,
+  group,
+  globalFilter,
+  columnFilters,
+  sorting,
+  onSortingChange,
+  onVisibleRowsChange,
+}: DealTableProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const toggleExpanded = (dealId: string) => {
@@ -147,14 +190,19 @@ export function DealTable({ deals, group, globalFilter, onVisibleRowsChange }: D
   const table = useLegacyTable({
     data: deals,
     columns: tableColumns,
-    state: { globalFilter },
-    // No in-table search UI exists on this component — globalFilter only
-    // ever changes via the shared PipelineToolbar above. This no-op keeps
-    // TanStack treating globalFilter as controlled instead of falling back
-    // to internal state (04-RESEARCH.md Pitfall 3).
+    state: { globalFilter, columnFilters, sorting },
+    // No in-table search/filter UI exists on this component — globalFilter
+    // and columnFilters only ever change via the shared PipelineToolbar
+    // above. These no-ops keep TanStack treating both as controlled instead
+    // of falling back to internal state (04-RESEARCH.md Pitfall 3).
     onGlobalFilterChange: () => {},
+    onColumnFiltersChange: () => {},
+    // Header clicks DO mutate sorting via column.getToggleSortingHandler(),
+    // so this must be the real parent setter, not a no-op.
+    onSortingChange,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     globalFilterFn: "includesString",
   });
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Briefcase, CircleX, Handshake, Target, Trophy, UserPlus } from "lucide-react";
+import type { ColumnFiltersState, OnChangeFn, SortingState } from "@tanstack/react-table";
 import { DealTable } from "@/features/pipeline/components/DealTable";
 import type { Deal, PipelineGroup } from "@/shared/types/deal";
 import { cn } from "@/lib/utils";
@@ -63,6 +64,9 @@ interface GroupSectionProps {
   group: PipelineGroup;
   deals: Deal[];
   globalFilter: string;
+  columnFilters: ColumnFiltersState;
+  sorting: SortingState;
+  onSortingChange: OnChangeFn<SortingState>;
 }
 
 /**
@@ -70,7 +74,14 @@ interface GroupSectionProps {
  * DealTable. The header always renders, regardless of whether `deals` is
  * empty — a group never disappears just because it currently has 0 deals.
  */
-export function GroupSection({ group, deals, globalFilter }: GroupSectionProps) {
+export function GroupSection({
+  group,
+  deals,
+  globalFilter,
+  columnFilters,
+  sorting,
+  onSortingChange,
+}: GroupSectionProps) {
   const meta = GROUP_META[group];
   const Icon = meta.icon;
   // Starts equal to `deals` and self-corrects one render tick after `deals`
@@ -103,6 +114,9 @@ export function GroupSection({ group, deals, globalFilter }: GroupSectionProps) 
           group={group}
           deals={deals}
           globalFilter={globalFilter}
+          columnFilters={columnFilters}
+          sorting={sorting}
+          onSortingChange={onSortingChange}
           onVisibleRowsChange={setVisibleDeals}
         />
       </div>

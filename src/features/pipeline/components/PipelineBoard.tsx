@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import type { ColumnFiltersState, SortingState } from "@tanstack/react-table";
 import { GROUPS, usePipelineGroups } from "@/features/pipeline/hooks/usePipelineGroups";
 import { GroupSection } from "@/features/pipeline/components/GroupSection";
 import { AddDealDialog } from "@/features/pipeline/components/AddDealDialog";
 import { PipelineToolbar } from "@/features/pipeline/components/PipelineToolbar";
 import { Button } from "@/components/ui/button";
+import { usePipelineStore } from "@/features/pipeline/store/pipelineStore";
 
 /**
  * The primary pipeline view: mounts all 5 pipeline-stage groups
@@ -17,6 +19,46 @@ export function PipelineBoard() {
   const groups = usePipelineGroups();
   const [isAddDealOpen, setIsAddDealOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState("");
+  const deals = usePipelineStore((s) => s.deals);
+  const ownerOptions = useMemo(() => [...new Set(deals.map((d) => d.owner))].sort(), [deals]);
+  const [owner, setOwner] = useState("");
+  const [valueMin, setValueMin] = useState("");
+  const [valueMax, setValueMax] = useState("");
+  const [closeDateMin, setCloseDateMin] = useState("");
+  const [closeDateMax, setCloseDateMax] = useState("");
+  const [sorting, setSorting] = useState<SortingState>([]);
+
+  const isValueRangeValid = !(
+    valueMin !== "" &&
+    valueMax !== "" &&
+    Number(valueMin) > Number(valueMax)
+  );
+  const isCloseDateRangeValid = !(
+    closeDateMin !== "" &&
+    closeDateMax !== "" &&
+    closeDateMin > closeDateMax
+  );
+
+  const columnFilters: ColumnFiltersState = useMemo(() => {
+    const filters: ColumnFiltersState = [];
+    if (owner) filters.push({ id: "owner", value: owner });
+    if (isValueRangeValid && (valueMin !== "" || valueMax !== "")) {
+      filters.push({
+        id: "value",
+        value: [valueMin === "" ? undefined : Number(valueMin), valueMax === "" ? undefined : Number(valueMax)],
+      });
+    }
+    if (isCloseDateRangeValid && (closeDateMin !== "" || closeDateMax !== "")) {
+      filters.push({
+        id: "closeDate",
+        value: [
+          closeDateMin === "" ? undefined : closeDateMin,
+          closeDateMax === "" ? undefined : `${closeDateMax}T23:59:59`,
+        ],
+      });
+    }
+    return filters;
+  }, [owner, valueMin, valueMax, closeDateMin, closeDateMax, isValueRangeValid, isCloseDateRangeValid]);
 
   return (
     <div className="mx-auto flex w-[95%] flex-col gap-6 px-6 py-8">
@@ -24,13 +66,32 @@ export function PipelineBoard() {
         <h1 className="font-heading text-lg font-semibold">Pipeline</h1>
         <Button onClick={() => setIsAddDealOpen(true)}>Add Deal</Button>
       </div>
-      <PipelineToolbar globalFilter={globalFilter} onGlobalFilterChange={setGlobalFilter} />
+      <PipelineToolbar
+        globalFilter={globalFilter}
+        onGlobalFilterChange={setGlobalFilter}
+        owner={owner}
+        onOwnerChange={setOwner}
+        ownerOptions={ownerOptions}
+        valueMin={valueMin}
+        onValueMinChange={setValueMin}
+        valueMax={valueMax}
+        onValueMaxChange={setValueMax}
+        closeDateMin={closeDateMin}
+        onCloseDateMinChange={setCloseDateMin}
+        closeDateMax={closeDateMax}
+        onCloseDateMaxChange={setCloseDateMax}
+        isValueRangeValid={isValueRangeValid}
+        isCloseDateRangeValid={isCloseDateRangeValid}
+      />
       {GROUPS.map((group) => (
         <GroupSection
           key={group}
           group={group}
           deals={groups[group]}
           globalFilter={globalFilter}
+          columnFilters={columnFilters}
+          sorting={sorting}
+          onSortingChange={setSorting}
         />
       ))}
       <AddDealDialog open={isAddDealOpen} onOpenChange={setIsAddDealOpen} />
