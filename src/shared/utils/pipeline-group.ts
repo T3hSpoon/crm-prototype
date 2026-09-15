@@ -33,3 +33,23 @@ export function fromPipelineGroup(
   }
   return { pipelineStage: group, outcome: "open" };
 }
+
+/**
+ * Computes the opposing-terminal-state fields to clear when a deal
+ * transitions into `group`. A deal moving anywhere other than "lost" has its
+ * `lostReason` cleared; a deal moving anywhere other than "won" has all 4
+ * contract-term fields cleared. Centralized here and spread into the patch
+ * object by `moveStage`/`moveToLost`/`moveToWon` alike so all 3 call sites
+ * can never drift out of sync (03.1-REVIEW.md CR-01, D-12/D-13).
+ */
+export function clearPatchFor(group: PipelineGroup): Partial<Deal> {
+  const patch: Partial<Deal> = {};
+  if (group !== "lost") patch.lostReason = undefined;
+  if (group !== "won") {
+    patch.contractStartDate = undefined;
+    patch.contractEndDate = undefined;
+    patch.contractSignedDate = undefined;
+    patch.paymentTerms = undefined;
+  }
+  return patch;
+}

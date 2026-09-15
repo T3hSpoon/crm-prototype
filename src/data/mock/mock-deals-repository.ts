@@ -71,7 +71,18 @@ export class MockDealsRepository implements DealsRepository {
     patch: Partial<
       Pick<
         Deal,
-        "pipelineStage" | "outcome" | "lostReason" | "name" | "value" | "owner" | "closeDate" | "lineItems"
+        | "pipelineStage"
+        | "outcome"
+        | "lostReason"
+        | "name"
+        | "value"
+        | "owner"
+        | "closeDate"
+        | "lineItems"
+        | "contractStartDate"
+        | "contractEndDate"
+        | "contractSignedDate"
+        | "paymentTerms"
       >
     >,
   ): Promise<Deal> {
