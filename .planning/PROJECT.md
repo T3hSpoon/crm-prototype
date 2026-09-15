@@ -1,5 +1,15 @@
 # iDrive CRM Prototype
 
+## Current State
+
+**Shipped:** v1.0 MVP — 2026-09-15 (5 phases, 11 plans, 17/17 v1 requirements complete)
+
+The full pipeline lifecycle works end-to-end on mock data: prospects flow through Prospect → Lead → Opportunity → Deal, deals carry full line-item detail and captured contract terms, lost deals require a reason and land in a distinct group, won deals roll up as the contracts-made list, and a Forecast page turns all of that into pipeline value/win-rate/loss-reason analysis. Live demo: https://eld-dusky.vercel.app
+
+## Next Milestone Goals
+
+Not yet defined — run `/gsd-new-milestone` to scope v1.1. Candidates already flagged in REQUIREMENTS.md's v2 list and PROJECT.md decisions: real API/database persistence (replacing the mock repository), authentication/multi-user pipelines, stalled-deal flagging, and the eventual merge into the existing iDrive project.
+
 ## What This Is
 
 A React frontend prototype of a CRM for iDrive's sales pipeline, inspired by monday.com's board/table UI but with its own visual identity. It tracks prospects as they move through Prospect → Lead → Opportunity → Deal, keeps a record of deals that fell through (with a reason), lists closed/won deals as contracts made, and provides a forecast page for pipeline analysis. This phase is frontend-only, running on mock/seed data — no backend, API, or authentication yet.
@@ -18,13 +28,15 @@ A working, demoable pipeline view — prospects flow through stages, lost deals 
 - ✓ User can edit deal details inline (fields and line items) — Phase 2
 - ✓ Each deal supports line items (subitems): product/service, SKU, units, unit price, subtotal, type — Phase 2
 - ✓ User can capture deal-terms/contract fields (Prorata, Grace Period, Contract Term, Frequency, Currency) via a 2-step Add Deal wizard, for every new deal at creation — Phase 3
+- ✓ User can mark a deal as lost, capture a reason, and it moves to a separate Lost group — Phase 3.1
+- ✓ Won deals are listed as the "contracts made so far" view (no separate contract entity) — Phase 3.1
+- ✓ User can search, filter (owner/value/stage/close date), and sort the pipeline table — Phase 4
+- ✓ Forecast page showing raw/weighted pipeline value, win rate, and a lost-deal breakdown by reason/stage, derived from mock data — Phase 4
+- ✓ All data is mock/seed data held in app state — no persistence layer yet — confirmed holding through Phase 4, no backend introduced
 
 ### Active
 
-- [ ] User can mark a deal as lost, capture a reason, and it moves to a separate Lost group
-- [ ] Won deals are listed as the "contracts made so far" view (no separate contract entity)
-- [ ] Forecast page showing pipeline value, win rate, and projected revenue, derived from mock data
-- [ ] All data is mock/seed data held in app state — no persistence layer yet
+None — all v1 requirements shipped as of Phase 4.
 
 ### Out of Scope
 
@@ -55,10 +67,14 @@ A working, demoable pipeline view — prospects flow through stages, lost deals 
 | Own visual design, monday.com concepts only | Avoid a close visual clone; reuse pipeline/groups/subitems concepts | Shipped Phase 1 — tinted cards, left accent bars, per-group icons, original 5-hue palette; human-confirmed distinct in UAT |
 | React as frontend stack | Improves odds of a clean merge into the existing iDrive project later | Shipped Phase 1 — Vite 8 + React 19.2 + TypeScript 5.9.3, builds and runs cleanly |
 | Line items (subitems) per deal | Needed to capture product/service composition, mirroring the monday.com reference | Shipped Phase 2 — `LineItemsTable` (add/edit/remove), value auto-tracks the sum via `sumLineItems`/`hasManualOverride` with a manual-override + reset-to-sum path, positive-value validation on units/unitPrice |
-| Lost deals tracked in a separate group with a reason field | User wants to see what fell through and why | Partially shipped Phase 1 — Lost is a live board group; the required-reason gate is deferred to Phase 3.1 by design |
-| Won deals double as the "contracts made" list | No separate contract entity needed — a closed-won deal is the contract | — Pending (Phase 3.1) |
+| Lost deals tracked in a separate group with a reason field | User wants to see what fell through and why | Shipped Phase 3.1 — picking "Lost" in `StageSelect` opens a required-reason `Popover` (5-option enum + optional note) gating the atomic `moveToLost` store action; dismissing calls zero store actions |
+| Won deals double as the "contracts made" list | No separate contract entity needed — a closed-won deal is the contract | Shipped Phase 3.1 — "won" registered as a genuinely distinct `PipelineGroup` ("Contracts", own icon/accent/empty-state copy); picking "Won" opens `WonContractTermsDialog` (4 required fields + read-only Final Contract Value) gating the atomic `moveToWon` action |
+| Won triggered via `StageSelect`'s dropdown opening a dedicated dialog, not an in-place Add/Edit-modal "Next" vs "Save" swap | The originally-sketched mechanism (roadmap Phase 3.1 Success Criterion 3) assumed Won capture happened inside the same modal as deal creation/editing; the shipped design instead intercepts the pipeline table's own stage dropdown, matching the same pattern already used for Lost | Shipped Phase 3.1 — confirmed as an acceptable realization of "gate Won behind a contract-terms form before the transition commits" by the user at UAT (`03.1-UAT.md` test 7); `03.1-UI-SPEC.md` Assumption #1 |
+| `moveStage`/`moveToLost`/`moveToWon` don't clear the opposing terminal-state's fields when a deal transitions away from Lost/Won (stale `lostReason` or contract-term fields persist) | Surfaced by code review (`03.1-REVIEW.md` CR-01) as reachable via the shipped dropdown, not a hypothetical bypass | Accepted as a deferred gap by the user at UAT (`03.1-UAT.md` test 8) — flagged for a fix before Phase 4's FCST-02 (loss-reason breakdown) consumes `lostReason`/contract-term data, since a deal un-Lost/un-Won today keeps stale values |
 | Deal-terms/contract fields (Prorata, Grace Period, Contract Term, Frequency, Currency) captured on every new deal, at creation | User wants this data captured up front for later contract/quote template generation, regardless of pipeline stage | Shipped Phase 3 — `AddDealDialog` converted to a 2-step wizard (step 1 unchanged; step 2 adds all 5 fields via `addDealStep2Schema`, required with sane numeric bounds); accepted risk that un-touched step-2 defaults are indistinguishable from deliberately-entered values, confirmed acceptable for this phase's scope by the user at UAT (`03-SECURITY.md` AR-03-01) |
-| Forecast page included in v1 | User wants evaluation/forecast analysis available now, not deferred to v2 | — Pending (Phase 4) |
+| Forecast page included in v1 | User wants evaluation/forecast analysis available now, not deferred to v2 | Shipped Phase 4 — `ForecastPage` with raw/weighted pipeline value + win-rate stat tiles and lost-by-reason/lost-by-stage Recharts bar charts, kept mounted alongside the Pipeline tab via CSS `hidden` toggle (no remount, filter/sort state survives tab switches) |
+| Pipeline search/filter/sort shared across all 6 stage tables via a lifted-state `PipelineToolbar` | User needs to find/focus specific deals in a 40+ deal pipeline instead of scrolling six full tables | Shipped Phase 4 — `PipelineToolbar` (pure props-in/callbacks-out, zero store imports) drives `globalFilter`/`columnFilters`/`sorting` through TanStack Table's native APIs, synchronized across all 6 `GroupSection`→`DealTable` instances; group badges/totals recompute from the visible (post-filter) row model, not the raw array |
+| CR-01 fix (stale `lostReason`/contract-term fields surviving a Lost/Won→Prospect reversal) | Flagged at Phase 3.1 UAT as a deferred gap that would corrupt Phase 4's loss-reason breakdown if left unfixed | Shipped Phase 4 — centralized `clearPatchFor` helper spread into all 3 stage-transition store actions (`moveStage`/`moveToLost`/`moveToWon`), confirmed exactly 3 call sites and replay-tested in UAT |
 | No authentication in prototype | Single-user scope for this phase | Confirmed Phase 1 — no auth code exists anywhere in the codebase |
 | TypeScript pinned to 5.9.3, not 7.0.2 | `typescript-eslint@8.68.0`'s peer range (`<6.1.0`) is incompatible with TS 7's native compiler | Shipped Phase 1 |
 | Stage moves via a per-row dropdown, not drag-and-drop, in Phase 1 | Ship the simpler mechanism first; `@dnd-kit` packages are installed but reserved for a same-`moveStage`-action Phase 2+ fast-follow | Shipped Phase 1 |
@@ -85,4 +101,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-09-09 after Phase 3*
+*Last updated: 2026-09-15 after v1.0 milestone*

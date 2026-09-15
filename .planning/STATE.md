@@ -1,19 +1,18 @@
 ---
 gsd_state_version: 1.0
-current_phase: 03.1
-current_phase_name: Lost & Won Tracking
-status: planning
-stopped_at: Phase 03.1 context gathered
-last_updated: "2026-09-10T14:34:06.303Z"
-last_activity: 2026-09-09
-last_activity_desc: Completed quick task 260910-gpd - Correct MRR/ARR/Lifetime Contract Value to line-item-type formulas; remove ARPU
-state_head: 6d742b3e68d40c7e78333a5ef79f774b84f4280b
+status: Awaiting next milestone
+stopped_at: Phase 04 complete — all phases complete
+last_updated: "2026-09-15T12:16:04.473Z"
+last_activity: 2026-09-15
+last_activity_desc: Milestone v1.0 completed and archived
+state_head: ada31d219cbb44a1bc532a4ca317a17d26f76521
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
-  percent: 60
+  completed_phases: 5
+  total_plans: 11
+  completed_plans: 11
+  percent: 100
+current_phase: 04
 ---
 
 Total Phases: 5
@@ -22,25 +21,23 @@ Total Phases: 5
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-09)
+See: .planning/PROJECT.md (updated 2026-09-15)
 
 **Core value:** A working, demoable pipeline view — prospects flow through stages, lost deals are tracked with reasons, and won deals roll up as the contract list — solid enough to later wire into iDrive's existing project without a rebuild.
-**Current focus:** Phase 03.1 — Lost & Won Tracking
+**Current focus:** All 5 phases complete — milestone ready to close
 
 ## Current Position
 
-Phase: 03.1 — Lost & Won Tracking
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-09-09 — Phase 03 complete, transitioned to Phase 03.1
-
-Progress: [████████████████████] 7/7 plans (100%) executed so far — 3/5 phases (60%) complete
+Phase: Milestone v1.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-09-15 — Milestone v1.0 completed and archived
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 7
+- Total plans completed: 11
 - Average duration: - min
 - Total execution time: 0 hours
 
@@ -51,6 +48,8 @@ Progress: [████████████████████] 7/7 pla
 | 01 | 4 | - | - |
 | 02 | 2 | - | - |
 | 03 | 1 | - | - |
+| 03.1 | 2 | - | - |
+| 04 | 2 | - | - |
 
 **Recent Trend:**
 
@@ -64,6 +63,8 @@ Progress: [████████████████████] 7/7 pla
 |------|----------|-------|-------|
 | Phase 02 P01 | 20min | 3 tasks | 13 files |
 | Phase 02 P02 | ~25min | 3 tasks | 5 files |
+| Phase 04 P01 | 35min | 3 tasks | 6 files |
+| Phase 04 P02 | 55min | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,13 @@ Recent decisions affecting current work:
 - [Phase 02]: productOrService/sku left unconstrained on lineItemSchema (no .min(1)) per this plan's must_haves
 - [Phase 02, post-execution]: Deal detail drawer removed entirely; line items now live in a chevron-expandable sub-row directly in the pipeline table, board widened to ~95% viewport, deal IDs switched to 10-digit numeric strings, and a Vercel deployment is live at https://eld-dusky.vercel.app (see PROJECT.md Key Decisions)
 - [Phase 03]: Add Deal converted to a 2-step wizard (step 1 unchanged; step 2 adds Prorata/Grace Period/Contract Term/Frequency/Currency via `addDealStep2Schema`); accepted risk that un-touched step-2 defaults are indistinguishable from deliberate entry, confirmed acceptable for this phase's scope by the user at UAT — see `03-SECURITY.md` AR-03-01
+- [Phase 03.1]: Lost/Won gates both intercept `StageSelect`'s dropdown (Popover for Lost, dedicated Dialog for Won) rather than the originally-sketched in-place Add/Edit-modal "Next" vs "Save" swap; confirmed acceptable UX realization by the user at UAT — see PROJECT.md Key Decisions
+- [Phase 03.1]: `moveToLost`/`moveToWon`/`moveStage` don't clear the opposing terminal-state's fields when a deal transitions away from Lost/Won (stale `lostReason`/contract-term fields persist) — accepted as a deferred gap at UAT, not fixed this phase; flagged before Phase 4's FCST-02 consumes this data — see `03.1-REVIEW.md` CR-01, `03.1-SECURITY.md`
+- [Phase 04]: DealTable's empty-state check switched from raw deals.length to the filtered row model's length, so a search/filter narrowing a group to zero visible rows shows the group's existing empty-state message instead of a blank table body (must_haves.truths PIPE-04 empty edge).
+- [Phase 04]: GroupSection widened with columnFilters/sorting/onSortingChange props (not listed in Task 2's files block) to satisfy the plan's own instruction to pass this state into every GroupSection/DealTable call.
+- [Phase 04]: Owner filter's All owners Select option uses a non-empty sentinel value translated to/from empty string at the callback boundary, since Radix's Select.Item throws at runtime on an empty-string value.
+- [Phase 04]: CR-01 (stale lost/won fields) resolved via centralized clearPatchFor(group) helper spread into moveStage/moveToLost/moveToWon — Guarantees the 3 stage-transition call sites can never drift apart again, per D-13; closes the gap flagged in 03.1-REVIEW.md before Forecast's lost-by-reason breakdown consumes this data
+- [Phase 04]: Forecast page built as forecast-metrics.ts (pure functions, no store import) + ForecastPage/LostBreakdownChart, mirroring deal-metrics.ts's existing derived-value convention — Keeps forecast numbers provably decoupled from any Pipeline-tab search/filter/sort state, and keeps chart color theme-aware via CSS custom properties rather than React-side branching
 
 ### Pending Todos
 
@@ -89,12 +97,11 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 4 (Forecast) depends on Phases 1, 2, 3, and 3.1 — it needs correct deal values (Phase 2) and resolved lost/won data (Phase 3.1) for its loss-reason breakdown; do not start Phase 4 planning until Phase 3.1 is complete
-- Stage-probability percentages for weighted forecast value are placeholders from research (Prospect 10%/Lead 25%/Opportunity 50%/Deal 80-90%) — treat as documented, adjustable config, not calibrated figures
-- **[Locked decision for Phase 4 planning, 2026-09-10]** Confidence Level (a new required deal-level field: 100%/80%/50%/Open to RFP Bids, added via quick task 260910-ec8) is intended to REPLACE the stage-probability placeholders above as the actual input to Phase 4's weighted pipeline value calculation. Mapping: 100%→1.0, 80%→0.8, 50%→0.5, Open to RFP Bids→0.0 (conservative — contributes $0 until a real percentage is assigned). Not yet implemented — Phase 4's discuss/plan step should treat this as already-decided, not re-litigate it.
 - [Phase 1] `01-REVIEW.md` (5 warnings, non-blocking): `moveStage`/`addDeal` don't handle a rejected repository promise, no double-submit guard on Add Deal, store's `status` field is written but never read (no loading/error UI), one shadcn-generated file fails the project's own ESLint rule. None block Phase 1 — all become real gaps once a phase swaps the mock repository for a fallible network implementation. Worth a pass before/during that swap.
 - [Phase 3] `03-REVIEW.md` (2 warnings, non-blocking, both pre-existing patterns not introduced by Phase 3): `addDeal` still lacks the try/catch+log+re-throw pattern `updateDeal` already has (same root cause as the Phase 1 `addDeal` warning above); the 10-digit random deal-id generator has no uniqueness check against existing ids (collision would silently corrupt the wrong record via `findIndex`-based lookups). Neither blocks Phase 3's functional goal — worth addressing in the same pass as the Phase 1 mock-repository-fallibility item above.
+- [Phase 3.1, RESOLVED Phase 4] `03.1-REVIEW.md` CR-01 (stale `lostReason`/contract-term fields surviving a Lost/Won→Prospect reversal) — fixed via `clearPatchFor` in Phase 4 (see PROJECT.md Key Decisions). CR-02 (seeded `contractEndDate` computed from today instead of `contractStartDate`) remains a non-blocking demo-data quality issue. Warnings: repository patch-type drift held together by TS bivariance; missing `defaultValues` on `LostReasonPopover`'s form causes a React controlled/uncontrolled warning; no submit-in-flight guard (same documented gap as Add Deal/Lost popover) — none addressed, still open.
 - The user plans to eventually move/merge this prototype into an existing iDrive project (see PROJECT.md Context) — not started yet, just flagged so a future session doesn't lose the intent.
+- No `04-REVIEW.md` exists yet (code review not yet run for Phase 4) — worth running `/gsd-code-review 4` before/at milestone close.
 
 ### Quick Tasks Completed
 
@@ -121,10 +128,15 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 | Category | Item | Status | Deferred At | Milestone |
 |----------|------|--------|-------------|-----------|
-| *(none)* | | | | |
+| quick_tasks | 260910-ec8-add-three-new-field-groups-to-the-add-de | unknown | 2026-09-15 | v1.0 |
+| quick_tasks | 260910-gpd-rework-the-pipeline-table-s-mrr-arr-life | unknown | 2026-09-15 | v1.0 |
 
 ## Session Continuity
 
-Last session: 2026-09-10T14:34:06.101Z
-Stopped at: Phase 03.1 context gathered
-Resume file: .planning/phases/03.1-lost-won-tracking/03.1-CONTEXT.md
+Last session: 2026-09-15T12:15:00.000Z
+Stopped at: Phase 04 complete, all 5 phases complete — milestone ready to close
+Resume file: None
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
