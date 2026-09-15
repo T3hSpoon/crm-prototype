@@ -6,6 +6,7 @@ import { AddDealDialog } from "@/features/pipeline/components/AddDealDialog";
 import { PipelineToolbar } from "@/features/pipeline/components/PipelineToolbar";
 import { Button } from "@/components/ui/button";
 import { usePipelineStore } from "@/features/pipeline/store/pipelineStore";
+import type { PipelineGroup } from "@/shared/types/deal";
 
 /**
  * The primary pipeline view: mounts all 5 pipeline-stage groups
@@ -27,6 +28,7 @@ export function PipelineBoard() {
   const [closeDateMin, setCloseDateMin] = useState("");
   const [closeDateMax, setCloseDateMax] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [visibleGroups, setVisibleGroups] = useState<PipelineGroup[]>([...GROUPS]);
 
   const isValueRangeValid = !(
     valueMin !== "" &&
@@ -60,6 +62,19 @@ export function PipelineBoard() {
     return filters;
   }, [owner, valueMin, valueMax, closeDateMin, closeDateMax, isValueRangeValid, isCloseDateRangeValid]);
 
+  const groupsToRender = GROUPS.filter((g) => visibleGroups.includes(g));
+
+  const handleClearFilters = () => {
+    setGlobalFilter("");
+    setOwner("");
+    setValueMin("");
+    setValueMax("");
+    setCloseDateMin("");
+    setCloseDateMax("");
+    setSorting([]);
+    setVisibleGroups([...GROUPS]);
+  };
+
   return (
     <div className="mx-auto flex w-[95%] flex-col gap-6 px-6 py-8">
       <div className="flex items-center justify-between">
@@ -82,18 +97,28 @@ export function PipelineBoard() {
         onCloseDateMaxChange={setCloseDateMax}
         isValueRangeValid={isValueRangeValid}
         isCloseDateRangeValid={isCloseDateRangeValid}
+        visibleGroups={visibleGroups}
+        onVisibleGroupsChange={setVisibleGroups}
+        onClearFilters={handleClearFilters}
       />
-      {GROUPS.map((group) => (
-        <GroupSection
-          key={group}
-          group={group}
-          deals={groups[group]}
-          globalFilter={globalFilter}
-          columnFilters={columnFilters}
-          sorting={sorting}
-          onSortingChange={setSorting}
-        />
-      ))}
+      {groupsToRender.length === 0 ? (
+        <div className="rounded-xl border border-border bg-card p-8 text-center">
+          <p className="font-heading text-sm font-semibold">No pipeline stages selected.</p>
+          <p className="text-sm text-muted-foreground">Choose at least one stage above to see deals.</p>
+        </div>
+      ) : (
+        groupsToRender.map((group) => (
+          <GroupSection
+            key={group}
+            group={group}
+            deals={groups[group]}
+            globalFilter={globalFilter}
+            columnFilters={columnFilters}
+            sorting={sorting}
+            onSortingChange={setSorting}
+          />
+        ))
+      )}
       <AddDealDialog open={isAddDealOpen} onOpenChange={setIsAddDealOpen} />
     </div>
   );

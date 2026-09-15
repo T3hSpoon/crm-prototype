@@ -7,11 +7,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Button } from "@/components/ui/button";
+import { GROUPS } from "@/features/pipeline/hooks/usePipelineGroups";
+import type { PipelineGroup } from "@/shared/types/deal";
 
 // Radix's Select.Item forbids an empty-string `value` (it reserves "" to mean
 // "clear selection back to placeholder" internally) — this sentinel stands in
 // for "All owners" in the UI and is translated back to "" at the boundary.
 const ALL_OWNERS_VALUE = "__all__";
+
+const GROUP_LABELS: Record<PipelineGroup, string> = {
+  prospect: "Prospect",
+  lead: "Lead",
+  opportunity: "Opportunity",
+  deal: "Deal",
+  won: "Won",
+  lost: "Lost",
+};
 
 interface PipelineToolbarProps {
   globalFilter: string;
@@ -29,6 +42,9 @@ interface PipelineToolbarProps {
   onCloseDateMaxChange: (value: string) => void;
   isValueRangeValid: boolean;
   isCloseDateRangeValid: boolean;
+  visibleGroups: PipelineGroup[];
+  onVisibleGroupsChange: (groups: PipelineGroup[]) => void;
+  onClearFilters: () => void;
 }
 
 /**
@@ -54,6 +70,9 @@ export function PipelineToolbar({
   onCloseDateMaxChange,
   isValueRangeValid,
   isCloseDateRangeValid,
+  visibleGroups,
+  onVisibleGroupsChange,
+  onClearFilters,
 }: PipelineToolbarProps) {
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
@@ -127,6 +146,22 @@ export function PipelineToolbar({
           <p className="text-sm text-destructive">End date must be on or after the start date.</p>
         )}
       </div>
+
+      <ToggleGroup
+        type="multiple"
+        value={visibleGroups}
+        onValueChange={(next) => onVisibleGroupsChange(next as PipelineGroup[])}
+      >
+        {GROUPS.map((group) => (
+          <ToggleGroupItem key={group} value={group} aria-label={GROUP_LABELS[group]}>
+            {GROUP_LABELS[group]}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+
+      <Button type="button" variant="ghost" size="sm" onClick={onClearFilters}>
+        Clear filters
+      </Button>
     </div>
   );
 }
