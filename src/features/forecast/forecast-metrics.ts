@@ -78,3 +78,17 @@ export function computeLostByStage(deals: Deal[]): Record<PipelineStage, number>
   }
   return counts;
 }
+
+/**
+ * Folds every category ranked below the top `limit` (by count) into a
+ * single "Other" bucket, keeping a chart's x-axis to at most `limit + 1`
+ * bars (UI-SPEC overflow backstop). Returns the input unchanged when there
+ * are `limit + 1` or fewer categories — nothing to fold.
+ */
+export function bucketTopCategories(counts: Record<string, number>, limit = 5): Record<string, number> {
+  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  if (entries.length <= limit + 1) return counts;
+  const top = entries.slice(0, limit);
+  const otherTotal = entries.slice(limit).reduce((sum, [, count]) => sum + count, 0);
+  return Object.fromEntries([...top, ["Other", otherTotal]]);
+}

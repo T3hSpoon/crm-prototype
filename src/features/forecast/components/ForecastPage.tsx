@@ -5,6 +5,7 @@ import {
   computeWinRate,
   computeLostByReason,
   computeLostByStage,
+  bucketTopCategories,
 } from "@/features/forecast/forecast-metrics";
 import { StatTile } from "@/features/forecast/components/StatTile";
 import { LostBreakdownChart } from "@/features/forecast/components/LostBreakdownChart";
@@ -46,7 +47,7 @@ export function ForecastPage() {
         />
       </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <LostBreakdownChart title="Lost Deals by Reason" counts={lostByReason} />
+        <LostBreakdownChart title="Lost Deals by Reason" counts={bucketTopCategories(lostByReason)} />
         <LostBreakdownChart title="Lost Deals by Stage" counts={lostByStage} />
       </div>
     </div>
