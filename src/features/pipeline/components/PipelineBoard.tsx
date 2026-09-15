@@ -2,6 +2,7 @@ import { useState } from "react";
 import { GROUPS, usePipelineGroups } from "@/features/pipeline/hooks/usePipelineGroups";
 import { GroupSection } from "@/features/pipeline/components/GroupSection";
 import { AddDealDialog } from "@/features/pipeline/components/AddDealDialog";
+import { PipelineToolbar } from "@/features/pipeline/components/PipelineToolbar";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 export function PipelineBoard() {
   const groups = usePipelineGroups();
   const [isAddDealOpen, setIsAddDealOpen] = useState(false);
+  const [globalFilter, setGlobalFilter] = useState("");
 
   return (
     <div className="mx-auto flex w-[95%] flex-col gap-6 px-6 py-8">
@@ -22,8 +24,14 @@ export function PipelineBoard() {
         <h1 className="font-heading text-lg font-semibold">Pipeline</h1>
         <Button onClick={() => setIsAddDealOpen(true)}>Add Deal</Button>
       </div>
+      <PipelineToolbar globalFilter={globalFilter} onGlobalFilterChange={setGlobalFilter} />
       {GROUPS.map((group) => (
-        <GroupSection key={group} group={group} deals={groups[group]} />
+        <GroupSection
+          key={group}
+          group={group}
+          deals={groups[group]}
+          globalFilter={globalFilter}
+        />
       ))}
       <AddDealDialog open={isAddDealOpen} onOpenChange={setIsAddDealOpen} />
     </div>

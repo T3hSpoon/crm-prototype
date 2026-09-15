@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { flexRender } from "@tanstack/react-table";
 // TanStack Table v9.2.3 replaced the v8 useReactTable/createColumnHelper API
 // with a new features-based useTable hook (see @tanstack/react-table's
@@ -9,7 +9,12 @@ import { flexRender } from "@tanstack/react-table";
 // row model). Using it keeps this file's row-model surface literally free of
 // getGroupedRowModel/getSortedRowModel/getFilteredRowModel, matching the
 // plan's acceptance criteria and its "getCoreRowModel() only" intent.
-import { getCoreRowModel, legacyCreateColumnHelper, useLegacyTable } from "@tanstack/react-table/legacy";
+import {
+  getCoreRowModel,
+  getFilteredRowModel,
+  legacyCreateColumnHelper,
+  useLegacyTable,
+} from "@tanstack/react-table/legacy";
 import { ChevronRight } from "lucide-react";
 import { StageSelect } from "@/features/pipeline/components/StageSelect";
 import { EditableCell } from "@/features/pipeline/components/EditableCell";
@@ -31,27 +36,32 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 const columns = [
   columnHelper.accessor("name", {
     header: "Name",
+    enableGlobalFilter: true,
     cell: (info) => (
       <EditableCell dealId={info.row.original.id} columnId="name" value={info.getValue()} />
     ),
   }),
   columnHelper.accessor("company", {
     header: "Company",
+    enableGlobalFilter: true,
   }),
   columnHelper.accessor("value", {
     header: "Value",
+    enableGlobalFilter: false,
     cell: (info) => (
       <EditableCell dealId={info.row.original.id} columnId="value" value={info.getValue()} />
     ),
   }),
   columnHelper.accessor("owner", {
     header: "Owner",
+    enableGlobalFilter: false,
     cell: (info) => (
       <EditableCell dealId={info.row.original.id} columnId="owner" value={info.getValue()} />
     ),
   }),
   columnHelper.accessor("closeDate", {
     header: "Close Date",
+    enableGlobalFilter: false,
     cell: (info) => (
       <EditableCell dealId={info.row.original.id} columnId="closeDate" value={info.getValue()} />
     ),
@@ -59,11 +69,13 @@ const columns = [
   columnHelper.display({
     id: "lifetimeContractValue",
     header: "Lifetime Contract Value",
+    enableGlobalFilter: false,
     cell: (info) => currencyFormatter.format(computeLifetimeContractValue(info.row.original)),
   }),
   columnHelper.display({
     id: "stage",
     header: "Stage",
+    enableGlobalFilter: false,
     cell: (info) => (
       <StageSelect dealId={info.row.original.id} currentGroup={toPipelineGroup(info.row.original)} />
     ),
@@ -71,6 +83,7 @@ const columns = [
   columnHelper.display({
     id: "id",
     header: "ID",
+    enableGlobalFilter: false,
     cell: (info) => (
       <span className="text-xs font-mono text-muted-foreground">{info.row.original.id}</span>
     ),
@@ -80,6 +93,8 @@ const columns = [
 interface DealTableProps {
   deals: Deal[];
   group: PipelineGroup;
+  globalFilter: string;
+  onVisibleRowsChange?: (rows: Deal[]) => void;
 }
 
 /**
@@ -89,7 +104,7 @@ interface DealTableProps {
  * GroupSection already owns its own pre-partitioned `deals` slice (see
  * usePipelineGroups / 01-RESEARCH.md Pattern 1).
  */
-export function DealTable({ deals, group }: DealTableProps) {
+export function DealTable({ deals, group, globalFilter, onVisibleRowsChange }: DealTableProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const toggleExpanded = (dealId: string) => {
@@ -107,6 +122,7 @@ export function DealTable({ deals, group }: DealTableProps) {
   const expandColumn = columnHelper.display({
     id: "expand",
     header: () => null,
+    enableGlobalFilter: false,
     cell: (info) => {
       const dealId = info.row.original.id;
       const isExpanded = expandedIds.has(dealId);
@@ -131,8 +147,25 @@ export function DealTable({ deals, group }: DealTableProps) {
   const table = useLegacyTable({
     data: deals,
     columns: tableColumns,
+    state: { globalFilter },
+    // No in-table search UI exists on this component — globalFilter only
+    // ever changes via the shared PipelineToolbar above. This no-op keeps
+    // TanStack treating globalFilter as controlled instead of falling back
+    // to internal state (04-RESEARCH.md Pitfall 3).
+    onGlobalFilterChange: () => {},
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    globalFilterFn: "includesString",
   });
+
+  // Use table.getRowModel() (the final row model in whatever pipeline is
+  // wired), not table.getFilteredRowModel() directly, so this effect stays
+  // correct once Task 2/3 add column filters and sorting to the same
+  // pipeline without needing to touch this effect again.
+  useEffect(() => {
+    onVisibleRowsChange?.(table.getRowModel().rows.map((row) => row.original));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [table.getRowModel().rows]);
 
   return (
     <div className="overflow-x-auto rounded-lg border border-border">
@@ -151,7 +184,7 @@ export function DealTable({ deals, group }: DealTableProps) {
           ))}
         </thead>
         <tbody>
-          {deals.length === 0 ? (
+          {table.getRowModel().rows.length === 0 ? (
             <tr>
               <td
                 colSpan={tableColumns.length}

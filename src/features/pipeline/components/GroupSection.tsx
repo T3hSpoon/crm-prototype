@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Briefcase, CircleX, Handshake, Target, Trophy, UserPlus } from "lucide-react";
 import { DealTable } from "@/features/pipeline/components/DealTable";
@@ -61,6 +62,7 @@ const GROUP_META: Record<
 interface GroupSectionProps {
   group: PipelineGroup;
   deals: Deal[];
+  globalFilter: string;
 }
 
 /**
@@ -68,10 +70,14 @@ interface GroupSectionProps {
  * DealTable. The header always renders, regardless of whether `deals` is
  * empty — a group never disappears just because it currently has 0 deals.
  */
-export function GroupSection({ group, deals }: GroupSectionProps) {
+export function GroupSection({ group, deals, globalFilter }: GroupSectionProps) {
   const meta = GROUP_META[group];
   const Icon = meta.icon;
-  const total = deals.reduce((sum, d) => sum + d.value, 0);
+  // Starts equal to `deals` and self-corrects one render tick after `deals`
+  // itself changes (e.g. a new deal is added elsewhere) via DealTable's
+  // effect firing — expected, not a regression.
+  const [visibleDeals, setVisibleDeals] = useState<Deal[]>(deals);
+  const total = visibleDeals.reduce((sum, d) => sum + d.value, 0);
 
   return (
     <section
@@ -85,7 +91,7 @@ export function GroupSection({ group, deals }: GroupSectionProps) {
           <Icon className="size-4 text-foreground/70" aria-hidden="true" />
           <h2 className="font-heading text-sm font-semibold tracking-wide">{meta.label}</h2>
           <span className="rounded-full bg-background/80 px-2 py-0.5 text-xs font-medium text-muted-foreground">
-            {deals.length}
+            {visibleDeals.length}
           </span>
         </div>
         <span className="text-sm font-semibold text-foreground/80">
@@ -93,7 +99,12 @@ export function GroupSection({ group, deals }: GroupSectionProps) {
         </span>
       </header>
       <div className="p-3">
-        <DealTable group={group} deals={deals} />
+        <DealTable
+          group={group}
+          deals={deals}
+          globalFilter={globalFilter}
+          onVisibleRowsChange={setVisibleDeals}
+        />
       </div>
     </section>
   );
