@@ -24,7 +24,7 @@ Total Phases: 5
 See: .planning/PROJECT.md (updated 2026-09-15)
 
 **Core value:** A working, demoable pipeline view — prospects flow through stages, lost deals are tracked with reasons, and won deals roll up as the contract list — solid enough to later wire into iDrive's existing project without a rebuild.
-**Current focus:** All 5 phases complete — milestone ready to close
+**Current focus:** Planning next milestone — run `/gsd-new-milestone`
 
 ## Current Position
 
