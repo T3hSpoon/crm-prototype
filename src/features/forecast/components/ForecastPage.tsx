@@ -1,6 +1,13 @@
 import { usePipelineStore } from "@/features/pipeline/store/pipelineStore";
-import { computeRawPipelineValue, computeWeightedPipelineValue, computeWinRate } from "@/features/forecast/forecast-metrics";
+import {
+  computeRawPipelineValue,
+  computeWeightedPipelineValue,
+  computeWinRate,
+  computeLostByReason,
+  computeLostByStage,
+} from "@/features/forecast/forecast-metrics";
 import { StatTile } from "@/features/forecast/components/StatTile";
+import { LostBreakdownChart } from "@/features/forecast/components/LostBreakdownChart";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -23,6 +30,8 @@ export function ForecastPage() {
   const won = deals.filter((d) => d.outcome === "won").length;
   const lost = deals.filter((d) => d.outcome === "lost").length;
   const winRate = computeWinRate(deals);
+  const lostByReason = computeLostByReason(deals);
+  const lostByStage = computeLostByStage(deals);
 
   return (
     <div className="mx-auto flex w-[95%] flex-col gap-6 px-6 py-8">
@@ -35,6 +44,10 @@ export function ForecastPage() {
           value={won + lost === 0 ? "—" : `${Math.round(winRate * 100)}%`}
           caption={won + lost === 0 ? "No closed deals yet." : undefined}
         />
+      </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <LostBreakdownChart title="Lost Deals by Reason" counts={lostByReason} />
+        <LostBreakdownChart title="Lost Deals by Stage" counts={lostByStage} />
       </div>
     </div>
   );

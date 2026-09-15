@@ -1,4 +1,4 @@
-import type { Deal, ConfidenceLevel } from "@/shared/types/deal";
+import type { Deal, ConfidenceLevel, PipelineStage } from "@/shared/types/deal";
 
 /**
  * Pure, never-stored derived-value functions for the Forecast page
@@ -49,4 +49,32 @@ export function computeWinRate(deals: Deal[]): number {
   const won = deals.filter((d) => d.outcome === "won").length;
   const lost = deals.filter((d) => d.outcome === "lost").length;
   return won + lost === 0 ? 0 : won / (won + lost);
+}
+
+/**
+ * Groups lost deals by the `lostReason` category prefix (split on the first
+ * ":") — never the raw "{category}: {note}" string and never the free-text
+ * note portion itself as a chart category. A lost deal with no recorded
+ * reason still counts, under an "Unknown" bucket, never silently dropped.
+ */
+export function computeLostByReason(deals: Deal[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const d of deals.filter((deal) => deal.outcome === "lost")) {
+    const category = d.lostReason?.split(":")[0]?.trim() ?? "Unknown";
+    counts[category] = (counts[category] ?? 0) + 1;
+  }
+  return counts;
+}
+
+/**
+ * Groups lost deals by `pipelineStage` directly — never `toPipelineGroup`,
+ * which would return "lost" and destroy the stage information a lost deal
+ * retains (the stage it fell through from).
+ */
+export function computeLostByStage(deals: Deal[]): Record<PipelineStage, number> {
+  const counts: Record<PipelineStage, number> = { prospect: 0, lead: 0, opportunity: 0, deal: 0 };
+  for (const d of deals.filter((deal) => deal.outcome === "lost")) {
+    counts[d.pipelineStage] += 1;
+  }
+  return counts;
 }
