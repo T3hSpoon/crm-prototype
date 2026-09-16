@@ -20,6 +20,7 @@ import {
 import { ChevronRight } from "lucide-react";
 import { StageSelect } from "@/features/pipeline/components/StageSelect";
 import { EditableCell } from "@/features/pipeline/components/EditableCell";
+import { ConfidenceCell } from "@/features/pipeline/components/ConfidenceCell";
 import { LineItemsTable } from "@/features/pipeline/components/LineItemsTable";
 import type { Deal, PipelineGroup } from "@/shared/types/deal";
 import { toPipelineGroup } from "@/shared/utils/pipeline-group";
@@ -96,6 +97,13 @@ const columns = [
     filterFn: "inDateRange",
     cell: (info) => (
       <EditableCell dealId={info.row.original.id} columnId="closeDate" value={info.getValue()} />
+    ),
+  }),
+  columnHelper.accessor("confidenceLevel", {
+    header: "Confidence",
+    enableGlobalFilter: false,
+    cell: (info) => (
+      <ConfidenceCell dealId={info.row.original.id} value={info.getValue()} />
     ),
   }),
   columnHelper.display({

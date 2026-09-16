@@ -10,6 +10,7 @@ export const dealEditSchema = z.object({
   value: z.coerce.number().positive("Value must be positive"),
   owner: z.string().min(1, "Owner is required"),
   closeDate: z.string().min(1, "Close date is required"),
+  confidenceLevel: z.enum(["100", "80", "50", "open-to-rfp"]),
 });
 
 export type DealEditFormValues = z.infer<typeof dealEditSchema>;

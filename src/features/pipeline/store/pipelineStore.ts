@@ -19,7 +19,9 @@ interface PipelineState {
   moveToWon: (dealId: string, terms: WonContractTermsFormValues) => Promise<void>;
   updateDeal: (
     id: string,
-    patch: Partial<Pick<Deal, "name" | "value" | "owner" | "closeDate" | "lineItems">>,
+    patch: Partial<
+      Pick<Deal, "name" | "value" | "owner" | "closeDate" | "lineItems" | "confidenceLevel">
+    >,
   ) => Promise<void>;
 }
 
