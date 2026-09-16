@@ -169,3 +169,7 @@ None - no external service configuration required.
 ## Next Phase Readiness
 
 All 3 v1.1 requirements (DEAL-07, FCST-03, FCST-04) are implemented and pass automated verification (build + unit tests + grep assertions). This is the only plan in Phase 5 and the last plan in the v1.1 milestone. The 3 embedded `<human-check>` items across the plan's tasks should be harvested into end-of-phase UAT per `workflow.human_verify_mode: end-of-phase` before the milestone is considered fully verified and shipped.
+
+## Self-Check: PASSED
+
+All 8 created/modified files verified present on disk (`confidence-level.ts`, `ConfidenceCell.tsx`, `forecast-breakdown.ts`, `ForecastBreakdownTable.tsx`, `deal-metrics.test.ts`, `forecast-breakdown.test.ts`, `vitest.config.ts`, this SUMMARY.md). All 6 commits verified present in `git log` (`81edaf4`, `85dd957`, `29fb51f`, `13bd38e`, `a777cbc`, `9daabec`). No missing items.
