@@ -13,7 +13,9 @@ import { computeSubtotal } from "@/shared/utils/line-items";
  * formulas (both fields remain on `Deal` for other purposes). MRR/ARR are no
  * longer rendered as pipeline-table columns (per later correction), but stay
  * exported here since the underlying calculations remain valid and may be
- * used again. ARPU was removed entirely (calculation and column).
+ * used again. ARPU (Phase 5, per PROJECT.md's locked "ARPU reintroduced as
+ * MRR / service quantity (derived, never stored)" decision) is reintroduced
+ * this phase as a derived function below — never a stored field on `Deal`.
  */
 
 /**
@@ -47,4 +49,52 @@ export function computeLifetimeContractValue(
     .filter((item) => item.type === "product")
     .reduce((sum, item) => sum + computeSubtotal(item), 0);
   return productSubtotal + computeMrr(deal) * deal.contractTermMonths;
+}
+
+/**
+ * Quantity — the sum of `units` across only the deal's `type: "service"`
+ * line items (Phase 5, FCST-03). Product-type line-item units are excluded,
+ * mirroring `computeMrr`'s service-only filter.
+ */
+export function computeQuantity(deal: Pick<Deal, "lineItems">): number {
+  return deal.lineItems
+    .filter((item) => item.type === "service")
+    .reduce((sum, item) => sum + item.units, 0);
+}
+
+/**
+ * ARPU (Average Revenue Per User) — MRR / Quantity. Returns `null` (never
+ * `0` or `NaN`) when Quantity is 0, since a deal with no service line items
+ * has no meaningful per-unit average (D-06).
+ */
+export function computeArpu(deal: Pick<Deal, "lineItems">): number | null {
+  const quantity = computeQuantity(deal);
+  return quantity === 0 ? null : computeMrr(deal) / quantity;
+}
+
+/**
+ * Comma-joins ALL of a deal's line-item SKUs (not scoped to service-type
+ * only, D-04) — mirrors `joinServiceNames`'s own comma-join convention.
+ * Blank skus are filtered out before joining so a missing sku never produces
+ * a stray/double comma (Pitfall 4). Returns `""` when there is nothing to
+ * join — callers render the em-dash fallback (D-05).
+ */
+export function joinModelSkus(deal: Pick<Deal, "lineItems">): string {
+  return deal.lineItems
+    .map((item) => item.sku)
+    .filter(Boolean)
+    .join(", ");
+}
+
+/**
+ * Comma-joins `productOrService` of `type: "service"` line items only.
+ * Blank values are filtered out before joining (Pitfall 4). Returns `""`
+ * when there is nothing to join — callers render the em-dash fallback (D-05).
+ */
+export function joinServiceNames(deal: Pick<Deal, "lineItems">): string {
+  return deal.lineItems
+    .filter((item) => item.type === "service")
+    .map((item) => item.productOrService)
+    .filter(Boolean)
+    .join(", ");
 }
