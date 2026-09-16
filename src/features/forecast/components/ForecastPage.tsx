@@ -9,6 +9,7 @@ import {
 } from "@/features/forecast/forecast-metrics";
 import { StatTile } from "@/features/forecast/components/StatTile";
 import { LostBreakdownChart } from "@/features/forecast/components/LostBreakdownChart";
+import { ForecastBreakdownTable } from "@/features/forecast/components/ForecastBreakdownTable";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -50,6 +51,8 @@ export function ForecastPage() {
         <LostBreakdownChart title="Lost Deals by Reason" counts={bucketTopCategories(lostByReason)} />
         <LostBreakdownChart title="Lost Deals by Stage" counts={lostByStage} />
       </div>
+      <h2 className="font-heading text-lg font-semibold">Confidence Breakdown</h2>
+      <ForecastBreakdownTable deals={deals} />
     </div>
   );
 }
