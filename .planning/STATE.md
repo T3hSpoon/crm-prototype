@@ -24,7 +24,7 @@ current_phase: 05
 See: .planning/PROJECT.md (updated 2026-09-16)
 
 **Core value:** A working, demoable pipeline view — prospects flow through stages, lost deals are tracked with reasons, and won deals roll up as the contract list — solid enough to later wire into iDrive's existing project without a rebuild.
-**Current focus:** v1.1 milestone complete — ready to close via `/gsd-complete-milestone`
+**Current focus:** v1.1 shipped and archived — planning next milestone via `/gsd-new-milestone`
 
 ## Current Position
 
