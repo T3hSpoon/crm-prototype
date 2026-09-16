@@ -2,13 +2,13 @@
 
 ## Current State
 
-**Shipped:** v1.0 MVP — 2026-09-15 (5 phases, 11 plans, 17/17 v1 requirements complete)
+**Shipped:** v1.1 Confidence-Based Forecast Breakdown — 2026-09-16 (1 phase, 1 plan, 3/3 v1.1 requirements complete)
 
-The full pipeline lifecycle works end-to-end on mock data: prospects flow through Prospect → Lead → Opportunity → Deal, deals carry full line-item detail and captured contract terms, lost deals require a reason and land in a distinct group, won deals roll up as the contracts-made list, and a Forecast page turns all of that into pipeline value/win-rate/loss-reason analysis. Live demo: https://eld-dusky.vercel.app
+The full pipeline lifecycle works end-to-end on mock data: prospects flow through Prospect → Lead → Opportunity → Deal, deals carry full line-item detail and captured contract terms, lost deals require a reason and land in a distinct group, won deals roll up as the contracts-made list, and a Forecast page turns all of that into pipeline value/win-rate/loss-reason analysis plus a confidence-grouped financial breakdown across the entire pipeline (open, won, and lost). Confidence level is now editable inline from the pipeline table, same click-to-edit pattern as owner/value/close date. Live demo: https://eld-dusky.vercel.app
 
 ## Next Milestone Goals
 
-Not yet defined — run `/gsd-new-milestone` to scope v1.1. Candidates already flagged in REQUIREMENTS.md's v2 list and PROJECT.md decisions: real API/database persistence (replacing the mock repository), authentication/multi-user pipelines, stalled-deal flagging, and the eventual merge into the existing iDrive project.
+Not yet defined — run `/gsd-new-milestone` to scope the next version. Candidates already flagged in REQUIREMENTS.md's v2 list and PROJECT.md decisions: real API/database persistence (replacing the mock repository), authentication/multi-user pipelines, stalled-deal flagging (ANLY-01), and the eventual merge into the existing iDrive project. Also worth considering: widening test coverage beyond Phase 5's unit-only scope (no component/interaction/e2e tests yet), and the small set of non-blocking review warnings accumulated across phases (see STATE.md Blockers/Concerns).
 
 ## What This Is
 
@@ -33,10 +33,12 @@ A working, demoable pipeline view — prospects flow through stages, lost deals 
 - ✓ User can search, filter (owner/value/stage/close date), and sort the pipeline table — Phase 4
 - ✓ Forecast page showing raw/weighted pipeline value, win rate, and a lost-deal breakdown by reason/stage, derived from mock data — Phase 4
 - ✓ All data is mock/seed data held in app state — no persistence layer yet — confirmed holding through Phase 4, no backend introduced
+- ✓ User can edit a deal's confidence level inline from the pipeline table (not just at creation via the Add Deal wizard) — Phase 5
+- ✓ Forecast page shows a table of all deals (open, won, and lost) grouped by confidence level, with per-deal Model/Services/Quantity/ARPU/MRR/ARR/Lifetime Contract Value/Contract Length columns and per-group + grand-total subtotal rows — Phase 5
 
 ### Active
 
-None — all v1 requirements shipped as of Phase 4.
+Not yet defined — scope the next milestone with `/gsd-new-milestone`.
 
 ### Out of Scope
 
@@ -51,6 +53,8 @@ None — all v1 requirements shipped as of Phase 4.
 - Reference screenshot: monday.com's "Deals" board (IdriveAI CRM workspace) — grouped table with colored status groups, subitems for inventory line items (SKU, units, price, product/service type), and a Nexus integration status column. Used for concept inspiration only, not a visual target.
 - The user has an existing iDrive project this CRM is ultimately meant to integrate into (adding real API/database wiring). That project's code is not yet present in this repository — integration is explicitly future work, not part of this milestone.
 - React was chosen as the stack partly to align with the likely stack of that existing project, reducing future rework when integration happens.
+- Current codebase: ~4,700 LOC TypeScript/TSX (Vite 8 + React 19.2 + TypeScript 5.9.3 + Zustand + TanStack Table + Tailwind v4 + shadcn/ui). Vitest was added in Phase 5 as the project's first test framework (unit tests only, covering pure derived-value functions — no component/interaction/e2e tests yet).
+- A small set of non-blocking review warnings has accumulated across phases (repository patch-type drift not covering `confidenceLevel`, missing double-submit guards, no exhaustiveness guard on confidence grouping, etc.) — see STATE.md Blockers/Concerns for the full list; none block current functionality but are worth sweeping before a real-backend integration phase.
 
 ## Constraints
 
@@ -82,6 +86,10 @@ None — all v1 requirements shipped as of Phase 4.
 | Pipeline board widened to ~95% of viewport width | User wants more horizontal room now that rows carry a chevron + ID column alongside the original 5 fields | Shipped Phase 2 (quick task 260908-f9d) |
 | Deal IDs display as 10-digit numeric strings, not UUIDs | User-requested display/format preference; a "Deal ID" column was also added as the last table column | Shipped Phase 2 (quick tasks 260908-i18, 260908-i6f) |
 | Standalone Vercel deployment for demo purposes | User wants to showcase the prototype before the eventual merge into the existing iDrive project | Shipped Phase 2 (quick task 260909-dig, `vercel.json`) — live at https://eld-dusky.vercel.app |
+| ARPU reintroduced as MRR / service quantity (derived, never stored) | Previously removed entirely (quick task 260910-gpd); milestone v1.1's confidence-grouped forecast table needs it back, but as a computed value consistent with the codebase's never-store-derived-values convention, not a re-added stored field | Shipped Phase 5 — `computeArpu` in `deal-metrics.ts`, zero-quantity guard renders "—" instead of `NaN`/`Infinity` |
+| Forecast table's "Model" column reuses `LineItem.sku` | No new field added to `LineItem` for this milestone; `sku` already carries the model-identifier role the reference screenshot's Camera/GPS Model columns implied | Shipped Phase 5 — `joinModelSkus` comma-joins all line-item skus, em-dash fallback when blank |
+| Confidence-grouped forecast table includes all deals regardless of outcome (open/won/lost) | User wants full visibility across the pipeline, not just still-open deals — differs from the existing weighted-pipeline-value calculation's open-only scope | Shipped Phase 5 — `groupDealsByConfidence` reads the full unfiltered `deals` selector, no outcome filter |
+| Vitest adopted as the project's first test framework | Milestone v1.1's forecast-breakdown/confidence-grouping logic is pure-function business logic well-suited to unit testing; no test framework existed before this phase | Shipped Phase 5 — `vitest.config.ts`, 7 unit tests across `deal-metrics.test.ts`/`forecast-breakdown.test.ts`; no component/interaction/e2e tests yet |
 
 ## Evolution
 
@@ -101,4 +109,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-09-15 after v1.0 milestone*
+*Last updated: 2026-09-16 after v1.1 milestone*

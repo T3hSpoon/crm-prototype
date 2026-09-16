@@ -1,0 +1,1 @@
+No external API integration: this phase only adds a client-side confidence editor and a Forecast breakdown table, built from already-installed local libraries — no network call, SDK, or endpoint is introduced.

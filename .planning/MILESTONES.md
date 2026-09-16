@@ -1,5 +1,15 @@
 # Milestones
 
+## v1.1 Confidence-Based Forecast Breakdown (Shipped: 2026-09-16)
+
+**Phases completed:** 1 phases, 1 plans, 3 tasks
+
+**Key accomplishments:**
+
+- Inline-editable Confidence column on the pipeline table plus a new all-outcomes, confidence-grouped financial breakdown table with per-group subtotals and a grand total on the Forecast page.
+
+---
+
 ## v1.0 MVP (Shipped: 2026-09-15)
 
 **Phases completed:** 5 phases, 11 plans, 29 tasks

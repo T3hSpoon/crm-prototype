@@ -1,43 +1,43 @@
 ---
 gsd_state_version: 1.0
+milestone: v1.1
+milestone_name: Confidence-Based Forecast Breakdown
 status: Awaiting next milestone
-stopped_at: Phase 04 complete — all phases complete
-last_updated: "2026-09-15T12:16:04.473Z"
-last_activity: 2026-09-15
-last_activity_desc: Milestone v1.0 completed and archived
-state_head: ada31d219cbb44a1bc532a4ca317a17d26f76521
+stopped_at: Phase 05 complete — all phases complete
+last_updated: "2026-09-16T12:37:23.229Z"
+last_activity: 2026-09-16
+last_activity_desc: Milestone v1.1 completed and archived
+state_head: c598921da42955d710128aa0f046a053a6738836
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 11
-  completed_plans: 11
+  total_phases: 1
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
   percent: 100
-current_phase: 04
+current_phase: 05
 ---
-
-Total Phases: 5
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-15)
+See: .planning/PROJECT.md (updated 2026-09-16)
 
 **Core value:** A working, demoable pipeline view — prospects flow through stages, lost deals are tracked with reasons, and won deals roll up as the contract list — solid enough to later wire into iDrive's existing project without a rebuild.
-**Current focus:** Planning next milestone — run `/gsd-new-milestone`
+**Current focus:** v1.1 milestone complete — ready to close via `/gsd-complete-milestone`
 
 ## Current Position
 
-Phase: Milestone v1.0 complete
+Phase: Milestone v1.1 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-09-15 — Milestone v1.0 completed and archived
+Last activity: 2026-09-16 — Milestone v1.1 completed and archived
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 11
+- Total plans completed: 12
 - Average duration: - min
 - Total execution time: 0 hours
 
@@ -50,6 +50,7 @@ Last activity: 2026-09-15 — Milestone v1.0 completed and archived
 | 03 | 1 | - | - |
 | 03.1 | 2 | - | - |
 | 04 | 2 | - | - |
+| 05 | 1 | - | - |
 
 **Recent Trend:**
 
@@ -73,23 +74,13 @@ Last activity: 2026-09-15 — Milestone v1.0 completed and archived
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Pre-phase: Pipeline order Prospect → Lead → Opportunity → Deal, mock/seed data only, React stack, own visual design (see PROJECT.md Key Decisions)
-- Pre-phase: Line items capped at one nesting level; deals addressed by stable ID (not array index) per research pitfalls
-- Phase 1: Stage moves ship via a per-row dropdown, not drag-and-drop, this milestone — `@dnd-kit/core`+`@dnd-kit/sortable` are installed but unused, reserved for a same-`moveStage`-action fast-follow whenever a later phase wants it
-- Phase 1: Moving a deal into Lost currently requires no reason — the required-reason gate is explicitly Phase 3.1's scope (formerly Phase 3, redirected/renumbered 2026-09-09), not a Phase 1 gap
-- Phase 1: `@tanstack/react-table@9.2.3` broke the v8-era `useReactTable` API assumed by research — code now imports from the package's own `/legacy` compat subpath (`useLegacyTable`); keep using that subpath for any new table code until a deliberate v9-native migration
-- [Phase 02]: Normalized closeDate to YYYY-MM-DD wherever it feeds a native date input (drawer + EditableCell), since seed data stores a full ISO datetime that native date inputs can't parse
-- [Phase 02]: Comparison-based override detection (no stored hasManualOverride flag on Deal) for DEAL-05; value auto-tracks lineItems sum until it diverges
-- [Phase 02]: productOrService/sku left unconstrained on lineItemSchema (no .min(1)) per this plan's must_haves
-- [Phase 02, post-execution]: Deal detail drawer removed entirely; line items now live in a chevron-expandable sub-row directly in the pipeline table, board widened to ~95% viewport, deal IDs switched to 10-digit numeric strings, and a Vercel deployment is live at https://eld-dusky.vercel.app (see PROJECT.md Key Decisions)
-- [Phase 03]: Add Deal converted to a 2-step wizard (step 1 unchanged; step 2 adds Prorata/Grace Period/Contract Term/Frequency/Currency via `addDealStep2Schema`); accepted risk that un-touched step-2 defaults are indistinguishable from deliberate entry, confirmed acceptable for this phase's scope by the user at UAT — see `03-SECURITY.md` AR-03-01
-- [Phase 03.1]: Lost/Won gates both intercept `StageSelect`'s dropdown (Popover for Lost, dedicated Dialog for Won) rather than the originally-sketched in-place Add/Edit-modal "Next" vs "Save" swap; confirmed acceptable UX realization by the user at UAT — see PROJECT.md Key Decisions
-- [Phase 03.1]: `moveToLost`/`moveToWon`/`moveStage` don't clear the opposing terminal-state's fields when a deal transitions away from Lost/Won (stale `lostReason`/contract-term fields persist) — accepted as a deferred gap at UAT, not fixed this phase; flagged before Phase 4's FCST-02 consumes this data — see `03.1-REVIEW.md` CR-01, `03.1-SECURITY.md`
-- [Phase 04]: DealTable's empty-state check switched from raw deals.length to the filtered row model's length, so a search/filter narrowing a group to zero visible rows shows the group's existing empty-state message instead of a blank table body (must_haves.truths PIPE-04 empty edge).
-- [Phase 04]: GroupSection widened with columnFilters/sorting/onSortingChange props (not listed in Task 2's files block) to satisfy the plan's own instruction to pass this state into every GroupSection/DealTable call.
-- [Phase 04]: Owner filter's All owners Select option uses a non-empty sentinel value translated to/from empty string at the callback boundary, since Radix's Select.Item throws at runtime on an empty-string value.
-- [Phase 04]: CR-01 (stale lost/won fields) resolved via centralized clearPatchFor(group) helper spread into moveStage/moveToLost/moveToWon — Guarantees the 3 stage-transition call sites can never drift apart again, per D-13; closes the gap flagged in 03.1-REVIEW.md before Forecast's lost-by-reason breakdown consumes this data
-- [Phase 04]: Forecast page built as forecast-metrics.ts (pure functions, no store import) + ForecastPage/LostBreakdownChart, mirroring deal-metrics.ts's existing derived-value convention — Keeps forecast numbers provably decoupled from any Pipeline-tab search/filter/sort state, and keeps chart color theme-aware via CSS custom properties rather than React-side branching
+- Phase 5: ARPU reintroduced as MRR / service quantity (derived, never stored) — see PROJECT.md Key Decisions
+- Phase 5: Forecast table's "Model" column reuses `LineItem.sku` — no new field added
+- Phase 5: Confidence-grouped forecast table includes all deals regardless of outcome (open/won/lost), not just open deals
+- Phase 5: Vitest adopted as the project's first test framework (unit tests only — no component/interaction/e2e tests yet)
+- v1.1 roadmap: Phase 5 covers all 3 v1.1 requirements (DEAL-07, FCST-03, FCST-04) as a single phase per coarse granularity — DEAL-07 (inline confidence edit) has no hard technical dependency on FCST-03/04 (confidenceLevel already exists on Deal), but both are small enough in scope that splitting would produce a single-requirement phase
+- Phase 1: Stage moves ship via a per-row dropdown, not drag-and-drop — `@dnd-kit/core`+`@dnd-kit/sortable` are installed but unused
+- Phase 4: Forecast page built as forecast-metrics.ts (pure functions, no store import) + ForecastPage/LostBreakdownChart, mirroring deal-metrics.ts's existing derived-value convention
 
 ### Pending Todos
 
@@ -97,30 +88,24 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Phase 1] `01-REVIEW.md` (5 warnings, non-blocking): `moveStage`/`addDeal` don't handle a rejected repository promise, no double-submit guard on Add Deal, store's `status` field is written but never read (no loading/error UI), one shadcn-generated file fails the project's own ESLint rule. None block Phase 1 — all become real gaps once a phase swaps the mock repository for a fallible network implementation. Worth a pass before/during that swap.
-- [Phase 3] `03-REVIEW.md` (2 warnings, non-blocking, both pre-existing patterns not introduced by Phase 3): `addDeal` still lacks the try/catch+log+re-throw pattern `updateDeal` already has (same root cause as the Phase 1 `addDeal` warning above); the 10-digit random deal-id generator has no uniqueness check against existing ids (collision would silently corrupt the wrong record via `findIndex`-based lookups). Neither blocks Phase 3's functional goal — worth addressing in the same pass as the Phase 1 mock-repository-fallibility item above.
-- [Phase 3.1, RESOLVED Phase 4] `03.1-REVIEW.md` CR-01 (stale `lostReason`/contract-term fields surviving a Lost/Won→Prospect reversal) — fixed via `clearPatchFor` in Phase 4 (see PROJECT.md Key Decisions). CR-02 (seeded `contractEndDate` computed from today instead of `contractStartDate`) remains a non-blocking demo-data quality issue. Warnings: repository patch-type drift held together by TS bivariance; missing `defaultValues` on `LostReasonPopover`'s form causes a React controlled/uncontrolled warning; no submit-in-flight guard (same documented gap as Add Deal/Lost popover) — none addressed, still open.
+- [Phase 1] `01-REVIEW.md` (5 warnings, non-blocking): `moveStage`/`addDeal` don't handle a rejected repository promise, no double-submit guard on Add Deal, store's `status` field is written but never read (no loading/error UI), one shadcn-generated file fails the project's own ESLint rule. None block Phase 1 — all become real gaps once a phase swaps the mock repository for a fallible network implementation.
+- [Phase 3] `03-REVIEW.md` (2 warnings, non-blocking): `addDeal` still lacks the try/catch+log+re-throw pattern `updateDeal` already has; the 10-digit random deal-id generator has no uniqueness check against existing ids.
+- [Phase 3.1, RESOLVED Phase 4] `03.1-REVIEW.md` CR-01 (stale `lostReason`/contract-term fields) — fixed via `clearPatchFor` in Phase 4. CR-02 (seeded `contractEndDate` computed from today instead of `contractStartDate`) remains a non-blocking demo-data quality issue. Other warnings (repository patch-type drift, missing `defaultValues` on `LostReasonPopover`, no submit-in-flight guard) still open.
 - The user plans to eventually move/merge this prototype into an existing iDrive project (see PROJECT.md Context) — not started yet, just flagged so a future session doesn't lose the intent.
 - No `04-REVIEW.md` exists yet (code review not yet run for Phase 4) — worth running `/gsd-code-review 4` before/at milestone close.
+- [Phase 5] `05-REVIEW.md` (4 warnings, non-blocking): `DealsRepository`/`MockDealsRepository.update()` Pick types were never widened to declare `confidenceLevel` even though `pipelineStore.updateDeal` now patches it — works today only because the mock impl blindly spreads the patch; a strictly-typed real backend would drop confidence-level edits. Also: `ConfidenceCell` re-selecting the current value skips clearing a stuck error message; `groupDealsByConfidence` indexes by `ConfidenceLevel` with no exhaustiveness guard; `ForecastBreakdownTable` calls `computeArpu` twice per row instead of caching it.
 
 ### Quick Tasks Completed
 
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
-| 1 | Widen the app layout to ~95% of the viewport width, and replace the deal-detail drawer line-items UI with an expandable table row | 2026-09-08 | 73c470e | | — |
-| 2 | Add a read-only "ID" column as the last column of the pipeline table, showing each deal's stable id in muted monospace text | 2026-09-08 | eeb63a0 | | .planning/quick/260908-i18-add-a-read-only-deal-id-column-as-the-la |
-| 3 | Replace UUID-format deal ID generation with a plain 10-digit numeric-string ID format | 2026-09-08 | 55653a8 | | — |
-| 4 | Add vercel.json for static Vite SPA deployment (build/output config + SPA rewrite fallback) | 2026-09-09 | 4ec0dc3 | | — |
-| 5 | From the Add Deal modal, remove the Value input field, but keep the default value at 0 (already calculated from sub-items) | 2026-09-09 | ceb9a7c | | .planning/quick/260909-o2k-from-the-add-deal-modal-remove-the-value |
-| 6 | Add Customer Type, Confidence Level, and financial metric fields (ARPU/MRR/ARR/Lifetime Contract Value) to the Add Deal wizard's step 2 | 2026-09-10 | 85a7ff2 | Needs Review (financial fields superseded by #7) | .planning/quick/260910-ec8-add-three-new-field-groups-to-the-add-de |
-| 7 | Move ARPU/MRR/ARR/Lifetime Contract Value out of the Add Deal wizard (correction to #6) — now purely computed from Value/Frequency/Contract Term/line-item units and shown as new columns in the pipeline table | 2026-09-10 | 7cc9dc8 | Superseded by #8 | .planning/quick/260910-fl6-remove-the-arpu-mrr-arr-and-lifetime-con |
-| 8 | Correct MRR/ARR/Lifetime Contract Value formulas to key off line-item type (product vs service) instead of Value/Frequency (correction to #7); remove ARPU entirely; hide MRR/ARR columns from the table (calculations kept) | 2026-09-10 | d5c7750 | Verified (build/lint/worked-examples; no agent code-review/verify — session rate limit) | .planning/quick/260910-gpd-rework-the-pipeline-table-s-mrr-arr-life |
 
 ### Roadmap Evolution
 
 - Phase 3 edited: added contract terms form to Won flow (WON-01); depends_on now Phase 1, Phase 2
 - Phase 3 edited: retitled to Deal Terms Wizard; goal/requirements/success-criteria rewritten to match 03-CONTEXT.md's deal-terms Add-Deal-wizard redirect; requirement changed from LOST-01/LOST-02/PIPE-03/WON-01 to new DEAL-06
 - Phase 3.1 inserted after Phase 3: Lost & Won Tracking (LOST-01, LOST-02, PIPE-03, WON-01) inserted as decimal phase between Phase 3 (Deal Terms Wizard) and Phase 4; Phase 4 now also depends on Phase 3.1 since FCST-02 needs its lost/won data. Superseded the earlier plain-integer Phase 5 add (added then removed same session). (URGENT)
+- v1.1: Phase 5 added — Confidence-Based Forecast Breakdown (DEAL-07, FCST-03, FCST-04), single phase per coarse granularity, depends on Phase 4
 
 ## Deferred Items
 
@@ -133,8 +118,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-15T12:15:00.000Z
-Stopped at: Phase 04 complete, all 5 phases complete — milestone ready to close
+Last session: 2026-09-16T12:28:48.000Z
+Stopped at: Phase 05 complete — all phases complete
 Resume file: None
 
 ## Operator Next Steps
