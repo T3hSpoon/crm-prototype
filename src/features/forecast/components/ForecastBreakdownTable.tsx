@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import type { Deal } from "@/shared/types/deal";
 import { CONFIDENCE_LEVELS, CONFIDENCE_LEVEL_LABELS } from "@/shared/constants/confidence-level";
-import { groupDealsByConfidence } from "@/features/forecast/forecast-breakdown";
+import { groupDealsByConfidence, computeGroupTotals } from "@/features/forecast/forecast-breakdown";
 import {
   computeQuantity,
   computeArpu,
@@ -23,13 +23,15 @@ interface ForecastBreakdownTableProps {
 }
 
 /**
- * Confidence-grouped financial breakdown table (Phase 5, FCST-03) — every
- * deal in the pipeline (open, won, lost) grouped by confidence level, with
- * per-deal financial columns. Plain HTML table, no @tanstack/react-table
- * involvement (D-11: always expanded, no sort/filter/row-expand —
- * RESEARCH.md's resolved recommendation). Mirrors DealTable's
- * overflow-x-auto shell and empty-state convention (GroupSection precedent:
- * a group never disappears just because it currently has 0 deals).
+ * Confidence-grouped financial breakdown table (Phase 5, FCST-03/FCST-04) —
+ * every deal in the pipeline (open, won, lost) grouped by confidence level,
+ * with per-deal financial columns, a subtotal row per group, and one
+ * grand-total row as the table's final row. Plain HTML table, no
+ * @tanstack/react-table involvement (D-11: always expanded, no
+ * sort/filter/row-expand — RESEARCH.md's resolved recommendation). Mirrors
+ * DealTable's overflow-x-auto shell and empty-state convention (GroupSection
+ * precedent: a group never disappears just because it currently has 0
+ * deals) — an empty group still renders its own $0/— subtotal row.
  */
 export function ForecastBreakdownTable({ deals }: ForecastBreakdownTableProps) {
   const grouped = groupDealsByConfidence(deals);
@@ -53,6 +55,7 @@ export function ForecastBreakdownTable({ deals }: ForecastBreakdownTableProps) {
         <tbody>
           {CONFIDENCE_LEVELS.map((level) => {
             const groupDeals = grouped[level];
+            const totals = computeGroupTotals(groupDeals);
             return (
               <Fragment key={level}>
                 <tr className="bg-muted/30">
@@ -87,9 +90,46 @@ export function ForecastBreakdownTable({ deals }: ForecastBreakdownTableProps) {
                     </tr>
                   ))
                 )}
+                <tr className="border-t border-border bg-muted/30">
+                  <td className="px-4 py-2 font-semibold">
+                    {`Subtotal — ${CONFIDENCE_LEVEL_LABELS[level]}`}
+                  </td>
+                  <td className="px-4 py-2">—</td>
+                  <td className="px-4 py-2">—</td>
+                  <td className="px-4 py-2">{totals.quantity}</td>
+                  <td className="px-4 py-2">
+                    {totals.arpu === null ? "—" : currencyFormatter.format(totals.arpu)}
+                  </td>
+                  <td className="px-4 py-2">{currencyFormatter.format(totals.mrr)}</td>
+                  <td className="px-4 py-2">{currencyFormatter.format(totals.arr)}</td>
+                  <td className="px-4 py-2">
+                    {currencyFormatter.format(totals.lifetimeContractValue)}
+                  </td>
+                  <td className="px-4 py-2">—</td>
+                </tr>
               </Fragment>
             );
           })}
+          {(() => {
+            const grandTotals = computeGroupTotals(deals);
+            return (
+              <tr className="border-t border-border bg-muted/50">
+                <td className="px-4 py-2 font-semibold">Grand Total</td>
+                <td className="px-4 py-2">—</td>
+                <td className="px-4 py-2">—</td>
+                <td className="px-4 py-2">{grandTotals.quantity}</td>
+                <td className="px-4 py-2">
+                  {grandTotals.arpu === null ? "—" : currencyFormatter.format(grandTotals.arpu)}
+                </td>
+                <td className="px-4 py-2">{currencyFormatter.format(grandTotals.mrr)}</td>
+                <td className="px-4 py-2">{currencyFormatter.format(grandTotals.arr)}</td>
+                <td className="px-4 py-2">
+                  {currencyFormatter.format(grandTotals.lifetimeContractValue)}
+                </td>
+                <td className="px-4 py-2">—</td>
+              </tr>
+            );
+          })()}
         </tbody>
       </table>
     </div>

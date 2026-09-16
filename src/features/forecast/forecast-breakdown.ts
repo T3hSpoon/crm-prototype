@@ -1,5 +1,11 @@
 import type { Deal, ConfidenceLevel } from "@/shared/types/deal";
 import { CONFIDENCE_LEVELS } from "@/shared/constants/confidence-level";
+import {
+  computeQuantity,
+  computeMrr,
+  computeArr,
+  computeLifetimeContractValue,
+} from "@/shared/utils/deal-metrics";
 
 /**
  * Pure, never-stored derived-value functions for the Forecast page's
@@ -32,4 +38,39 @@ export function groupDealsByConfidence(deals: Deal[]): Record<ConfidenceLevel, D
     byLevel[deal.confidenceLevel].push(deal);
   }
   return byLevel;
+}
+
+/** Aggregated financial totals for a confidence group's subtotal row, or the whole-table grand-total row. */
+export interface GroupTotals {
+  quantity: number;
+  mrr: number;
+  arr: number;
+  lifetimeContractValue: number;
+  arpu: number | null;
+}
+
+/**
+ * Sums quantity/mrr/arr/lifetimeContractValue across `deals` (FCST-04).
+ * `arpu` derives from the AGGREGATE mrr/quantity — never an average of
+ * per-deal ARPU values — and mirrors `forecast-metrics.ts`'s
+ * `computeWinRate` divide-by-zero guard shape: `null` (never `0`/`NaN`) when
+ * the aggregate quantity is 0 (D-06/D-07). Reused for both a group's
+ * subtotal row (called with that group's own deals) and the whole-table
+ * grand-total row (called with the full `deals` array) — one implementation,
+ * not two (Pitfall 2).
+ */
+export function computeGroupTotals(deals: Deal[]): GroupTotals {
+  const totals = deals.reduce(
+    (acc, deal) => ({
+      quantity: acc.quantity + computeQuantity(deal),
+      mrr: acc.mrr + computeMrr(deal),
+      arr: acc.arr + computeArr(deal),
+      lifetimeContractValue: acc.lifetimeContractValue + computeLifetimeContractValue(deal),
+    }),
+    { quantity: 0, mrr: 0, arr: 0, lifetimeContractValue: 0 },
+  );
+  return {
+    ...totals,
+    arpu: totals.quantity === 0 ? null : totals.mrr / totals.quantity,
+  };
 }
