@@ -168,7 +168,11 @@ describe("computeMonthlyWonUnits", () => {
     const won = deal({
       id: "won-old",
       outcome: "won",
-      contractSignedDate: threeMonthsAgo.toISOString().slice(0, 10),
+      // date-fns `format` (local-calendar-day-preserving), NOT
+      // `.toISOString().slice(0, 10)` — that shifts a local midnight Date
+      // back a calendar day in positive-UTC-offset timezones (the same
+      // day-granularity pitfall documented in 06-01-SUMMARY.md).
+      contractSignedDate: format(threeMonthsAgo, "yyyy-MM-dd"),
       lineItems: [lineItem({ units: 6 })],
     });
 
