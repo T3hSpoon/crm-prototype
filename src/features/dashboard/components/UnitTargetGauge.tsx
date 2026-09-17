@@ -1,4 +1,4 @@
-import { RadialBar, RadialBarChart, ResponsiveContainer } from "recharts";
+import { PolarAngleAxis, RadialBar, RadialBarChart, ResponsiveContainer } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
 import { computeUnitTargetPct } from "@/features/dashboard/dashboard-metrics";
 
@@ -41,6 +41,7 @@ export function UnitTargetGauge({ actual, target, wonDealCount }: UnitTargetGaug
                 innerRadius="70%"
                 outerRadius="100%"
               >
+                <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
                 <RadialBar
                   dataKey="value"
                   background={{ fill: "var(--chart-gauge-track)" }}
