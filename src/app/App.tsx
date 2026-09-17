@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { PipelineBoard } from "@/features/pipeline/components/PipelineBoard";
 import { ForecastPage } from "@/features/forecast/components/ForecastPage";
+import { DashboardPage } from "@/features/dashboard/components/DashboardPage";
 import { usePipelineStore } from "@/features/pipeline/store/pipelineStore";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -15,7 +16,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
  */
 function App() {
   const load = usePipelineStore((s) => s.load);
-  const [tab, setTab] = useState<"pipeline" | "forecast">("pipeline");
+  const [tab, setTab] = useState<"pipeline" | "forecast" | "dashboard">("pipeline");
 
   useEffect(() => {
     load();
@@ -23,10 +24,15 @@ function App() {
 
   return (
     <>
-      <Tabs value={tab} onValueChange={(v) => setTab(v as "pipeline" | "forecast")} className="mx-auto w-[95%] pt-4">
+      <Tabs
+        value={tab}
+        onValueChange={(v) => setTab(v as "pipeline" | "forecast" | "dashboard")}
+        className="mx-auto w-[95%] pt-4"
+      >
         <TabsList>
           <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
           <TabsTrigger value="forecast">Forecast</TabsTrigger>
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
         </TabsList>
       </Tabs>
       <div className={tab === "pipeline" ? "" : "hidden"}>
@@ -34,6 +40,9 @@ function App() {
       </div>
       <div className={tab === "forecast" ? "" : "hidden"}>
         <ForecastPage />
+      </div>
+      <div className={tab === "dashboard" ? "" : "hidden"}>
+        <DashboardPage />
       </div>
     </>
   );
