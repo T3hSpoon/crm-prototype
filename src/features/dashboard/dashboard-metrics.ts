@@ -1,4 +1,4 @@
-import { eachMonthOfInterval, format, startOfMonth, subMonths } from "date-fns";
+import { eachMonthOfInterval, format, parseISO, startOfMonth, subMonths } from "date-fns";
 import type { Deal, PipelineStage } from "@/shared/types/deal";
 import { MONTHLY_UNIT_TARGET, OWNER_ROSTER, TRAILING_MONTHS } from "@/features/dashboard/dashboard-config";
 
@@ -83,7 +83,12 @@ export function computeMonthlyWonUnits(deals: Deal[], months: number = TRAILING_
 
   for (const deal of deals) {
     if (deal.outcome !== "won" || !deal.contractSignedDate) continue; // D-04
-    const bucket = byKey.get(format(new Date(deal.contractSignedDate), "yyyy-MM"));
+    // `parseISO` (not `new Date`) — `contractSignedDate` is a date-only ISO string
+    // (no time/offset), which `new Date` parses as UTC midnight while `format` reads
+    // calendar fields in the local timezone, misattributing the 1st of a month into
+    // the previous month's bucket for negative-UTC-offset viewers. `parseISO` reads
+    // a date-only string as local midnight instead, matching `format`'s own frame.
+    const bucket = byKey.get(format(parseISO(deal.contractSignedDate), "yyyy-MM"));
     if (bucket) bucket.actual += sumLineItemUnits(deal);
   }
 
@@ -218,7 +223,12 @@ export function computeClosedByOwnerPerMonth(
     // renders (silently dropping the deal from the chart) or, if the free-text name
     // collides with "key"/"month", corrupt this row's own bookkeeping fields.
     if (!owners.includes(deal.owner)) continue;
-    const bucket = byKey.get(format(new Date(dateStr), "yyyy-MM"));
+    // `parseISO` (not `new Date`) — for Won deals `dateStr` is `contractSignedDate`,
+    // a date-only ISO string that `new Date` parses as UTC midnight, misattributing
+    // it to the previous month's local bucket (see computeMonthlyWonUnits). Lost
+    // deals' `closeDate` is a full ISO datetime; `parseISO` parses that identically
+    // to `new Date`, so this is a safe uniform fix for both branches.
+    const bucket = byKey.get(format(parseISO(dateStr), "yyyy-MM"));
     if (bucket) bucket[deal.owner] = (Number(bucket[deal.owner]) || 0) + 1;
   }
 
