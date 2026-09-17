@@ -1,0 +1,73 @@
+import {
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { Card, CardContent } from "@/components/ui/card";
+import type { computeMonthlyWonUnits } from "@/features/dashboard/dashboard-metrics";
+
+interface TargetVsActualChartProps {
+  data: ReturnType<typeof computeMonthlyWonUnits>;
+}
+
+/**
+ * Target vs. Actual Sales chart (DASH-02) — 12 trailing monthly buckets of
+ * Won-deal unit volume (Bar, "Actual") against the seeded monthly unit
+ * target (Line, "Target"), plotted on ONE shared y-axis (units). Never a
+ * dual-axis composition — both series are the same unit, so a shared axis
+ * is both the safer and the more correct representation (RESEARCH.md
+ * anti-pattern: dual-axis charts invent a correlation that isn't in the
+ * data). Card/CardContent + title + empty-state shape mirrors
+ * `LostBreakdownChart.tsx` exactly.
+ */
+export function TargetVsActualChart({ data }: TargetVsActualChartProps) {
+  const isEmpty = data.every((bucket) => bucket.actual === 0);
+
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <h3 className="text-sm font-semibold">Target vs. Actual Sales</h3>
+        {isEmpty ? (
+          <p className="p-8 text-center text-sm text-muted-foreground">
+            No closed-deal history yet — this chart fills in as Won deals accumulate month over month.
+          </p>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-lost-grid)" />
+              <XAxis dataKey="month" tick={{ fill: "#898781", fontSize: 12 }} />
+              <YAxis
+                allowDecimals={false}
+                tick={{ fill: "#898781", fontSize: 12 }}
+                label={{
+                  value: "Units",
+                  angle: -90,
+                  position: "insideLeft",
+                  fill: "#898781",
+                  fontSize: 12,
+                }}
+              />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="actual" name="Actual" fill="var(--chart-gauge-fill)" radius={[4, 4, 0, 0]} />
+              <Line
+                dataKey="target"
+                name="Target"
+                stroke="var(--chart-lost-grid)"
+                strokeDasharray="4 4"
+                strokeWidth={2}
+                dot={false}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
