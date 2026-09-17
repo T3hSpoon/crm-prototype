@@ -104,6 +104,12 @@ export function computeOwnerLeaderboard(deals: Deal[]) {
 
   for (const d of deals) {
     if (d.outcome !== "won") continue;
+    // `owner` is free text everywhere else in the app (AddDealDialog, EditableCell) —
+    // OWNER_ROSTER is not enforced on write, so a deal can carry an owner name
+    // outside the fixed roster. Skip it here rather than inserting a 6th (or Nth)
+    // leaderboard row, which would violate the "always exactly 5 entries" invariant
+    // every consumer/test relies on.
+    if (!totals.has(d.owner)) continue;
     totals.set(d.owner, (totals.get(d.owner) ?? 0) + d.value);
   }
 
@@ -206,6 +212,12 @@ export function computeClosedByOwnerPerMonth(
     if (deal.outcome !== "won" && deal.outcome !== "lost") continue; // RESEARCH Assumption A3
     const dateStr = deal.outcome === "won" ? deal.contractSignedDate : deal.closeDate; // D-04/D-05
     if (!dateStr) continue;
+    // `owner` is free text everywhere else in the app (AddDealDialog, EditableCell) —
+    // `owners` (the fixed roster) is not enforced on write. Without this guard, an
+    // unrecognized owner would either leak a stray property no `<Bar dataKey>` ever
+    // renders (silently dropping the deal from the chart) or, if the free-text name
+    // collides with "key"/"month", corrupt this row's own bookkeeping fields.
+    if (!owners.includes(deal.owner)) continue;
     const bucket = byKey.get(format(new Date(dateStr), "yyyy-MM"));
     if (bucket) bucket[deal.owner] = (Number(bucket[deal.owner]) || 0) + 1;
   }
