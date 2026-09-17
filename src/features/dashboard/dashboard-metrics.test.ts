@@ -5,6 +5,8 @@ import {
   computeUnitTargetPct,
   computeMonthlyWonUnits,
   computeOwnerLeaderboard,
+  computeConversionFunnel,
+  computeClosedByOwnerPerMonth,
 } from "./dashboard-metrics";
 import { OWNER_ROSTER, MONTHLY_UNIT_TARGET } from "@/features/dashboard/dashboard-config";
 import type { Deal, LineItem } from "@/shared/types/deal";
@@ -220,5 +222,107 @@ describe("computeOwnerLeaderboard", () => {
     const values = result.map((e) => e.wonValue);
     const sorted = [...values].sort((a, b) => b - a);
     expect(values).toEqual(sorted);
+  });
+});
+
+describe("computeConversionFunnel", () => {
+  it("returns 5 entries all with pct === 0 for an empty deals array (no NaN, no divide-by-zero throw)", () => {
+    const result = computeConversionFunnel([]);
+    expect(result).toHaveLength(5);
+    expect(result.every((entry) => entry.pct === 0)).toBe(true);
+    expect(result.every((entry) => Number.isFinite(entry.pct))).toBe(true);
+  });
+
+  it("with every deal outcome 'won', every stage's count equals the input length and pct equals 1", () => {
+    const deals = [
+      deal({ id: "w1", outcome: "won", pipelineStage: "prospect" }),
+      deal({ id: "w2", outcome: "won", pipelineStage: "lead" }),
+      deal({ id: "w3", outcome: "won", pipelineStage: "opportunity" }),
+    ];
+
+    const result = computeConversionFunnel(deals);
+    expect(result).toHaveLength(5);
+    expect(result.every((entry) => entry.count === deals.length)).toBe(true);
+    expect(result.every((entry) => entry.pct === 1)).toBe(true);
+  });
+
+  it("returns a raw (non-rounded) fractional pct — 2/3 deals reaching a stage yields 0.6666666666666666, not 0.67 or 67", () => {
+    const deals = [
+      deal({ id: "p1", outcome: "open", pipelineStage: "prospect" }),
+      deal({ id: "p2", outcome: "open", pipelineStage: "lead" }),
+      deal({ id: "p3", outcome: "open", pipelineStage: "lead" }),
+    ];
+
+    const result = computeConversionFunnel(deals);
+    const leadEntry = result.find((entry) => entry.stage === "Lead");
+    expect(leadEntry?.pct).toBe(0.6666666666666666);
+  });
+
+  it("always renders exactly 5 fixed stages (Prospect through Won) regardless of deal count", () => {
+    const result = computeConversionFunnel([deal({ id: "one", outcome: "open" })]);
+    expect(result.map((e) => e.stage)).toEqual(["Prospect", "Lead", "Opportunity", "Deal", "Won"]);
+  });
+
+  it("a Lost deal counts toward every stage up to and including the pipelineStage it fell from", () => {
+    const lost = deal({ id: "lost-1", outcome: "lost", pipelineStage: "opportunity" });
+    const result = computeConversionFunnel([lost]);
+
+    expect(result.find((e) => e.stage === "Prospect")?.count).toBe(1);
+    expect(result.find((e) => e.stage === "Lead")?.count).toBe(1);
+    expect(result.find((e) => e.stage === "Opportunity")?.count).toBe(1);
+    expect(result.find((e) => e.stage === "Deal")?.count).toBe(0);
+    expect(result.find((e) => e.stage === "Won")?.count).toBe(0);
+  });
+});
+
+describe("computeClosedByOwnerPerMonth", () => {
+  it("always returns exactly 12 month rows, each with all 5 OWNER_ROSTER keys present (defaulting to 0)", () => {
+    const result = computeClosedByOwnerPerMonth([]);
+    expect(result).toHaveLength(12);
+    for (const bucket of result) {
+      for (const owner of OWNER_ROSTER) {
+        expect(bucket[owner]).toBe(0);
+      }
+    }
+  });
+
+  it("counts a Won deal (bucketed by contractSignedDate) toward its owner's month", () => {
+    const won = deal({
+      id: "won-1",
+      outcome: "won",
+      owner: OWNER_ROSTER[0],
+      contractSignedDate: new Date().toISOString().slice(0, 10),
+    });
+
+    const result = computeClosedByOwnerPerMonth([won]);
+    const thisMonthKey = format(startOfMonth(new Date()), "yyyy-MM");
+    const bucket = result.find((b) => b.key === thisMonthKey);
+    expect(bucket?.[OWNER_ROSTER[0]]).toBe(1);
+  });
+
+  it("counts a Lost deal (bucketed by closeDate) toward its owner's month", () => {
+    const lost = deal({
+      id: "lost-1",
+      outcome: "lost",
+      owner: OWNER_ROSTER[1],
+      closeDate: new Date().toISOString().slice(0, 10),
+    });
+
+    const result = computeClosedByOwnerPerMonth([lost]);
+    const thisMonthKey = format(startOfMonth(new Date()), "yyyy-MM");
+    const bucket = result.find((b) => b.key === thisMonthKey);
+    expect(bucket?.[OWNER_ROSTER[1]]).toBe(1);
+  });
+
+  it("excludes open deals entirely", () => {
+    const open = deal({
+      id: "open-1",
+      outcome: "open",
+      owner: OWNER_ROSTER[2],
+      closeDate: new Date().toISOString().slice(0, 10),
+    });
+
+    const result = computeClosedByOwnerPerMonth([open]);
+    expect(result.every((bucket) => bucket[OWNER_ROSTER[2]] === 0)).toBe(true);
   });
 });

@@ -1,5 +1,5 @@
 import { eachMonthOfInterval, format, startOfMonth, subMonths } from "date-fns";
-import type { Deal } from "@/shared/types/deal";
+import type { Deal, PipelineStage } from "@/shared/types/deal";
 import { MONTHLY_UNIT_TARGET, OWNER_ROSTER, TRAILING_MONTHS } from "@/features/dashboard/dashboard-config";
 
 /**
@@ -110,4 +110,105 @@ export function computeOwnerLeaderboard(deals: Deal[]) {
   return [...totals.entries()]
     .map(([owner, wonValue]) => ({ owner, wonValue }))
     .sort((a, b) => b.wonValue - a.wonValue);
+}
+
+/** Fixed funnel ordering — matches PROJECT.md's locked pipeline order (`deal.ts`'s `PipelineStage`). */
+const STAGE_ORDER: PipelineStage[] = ["prospect", "lead", "opportunity", "deal"];
+
+/** Display labels for `computeConversionFunnel`'s returned `stage` strings, keyed by the same internal stage id plus the synthetic "won" entry. */
+const STAGE_LABELS: Record<PipelineStage | "won", string> = {
+  prospect: "Prospect",
+  lead: "Lead",
+  opportunity: "Opportunity",
+  deal: "Deal",
+  won: "Won",
+};
+
+/**
+ * Cumulative "reached-at-least-this-stage" SNAPSHOT funnel (DASH-04) — NOT a
+ * true historical stage-to-stage conversion rate. The data model stores only
+ * a deal's *current* `pipelineStage`, not a log of stage transitions
+ * (RESEARCH.md Pitfall 2), so a real cohort/advancement percentage cannot be
+ * computed from it. This instead answers "of all deals ever created, what
+ * fraction currently sits at or beyond stage N" — the standard fallback for
+ * CRM dashboards lacking a stage-history log. UI copy must disclose this
+ * (see ConversionFunnelChart's fixed caption), never present it as a true
+ * conversion rate.
+ *
+ * Returns one entry per `STAGE_ORDER` stage plus a final "won" entry, each
+ * `{ stage, count, pct }`. A deal counts toward a given non-won stage when
+ * `outcome === "won"` (unconditionally — a completed deal is treated as
+ * having passed every stage, RESEARCH Assumption A4, since `StageSelect`
+ * allows a direct Prospect->Won move that would otherwise under-count) OR
+ * when its `pipelineStage` rank is at/past that stage (covers open deals at
+ * their current stage, and Lost deals, which retain the `pipelineStage` they
+ * fell from — `pipeline-group.ts`'s established invariant). The "won" entry's
+ * count is simply the number of `outcome === "won"` deals.
+ *
+ * `pct` is intentionally a raw, unrounded fraction (`count / total`) — never
+ * pre-rounded here. Rounding happens only at the display layer via
+ * `Math.round(pct * 100)`, matching `forecast-metrics.ts`'s `computeWinRate`
+ * / `ForecastPage.tsx`'s existing `Math.round(winRate * 100)` convention.
+ * `total = deals.length`; with 0 total deals every `pct` is exactly `0`
+ * (divide-by-zero guarded, never `NaN`/`Infinity`).
+ */
+export function computeConversionFunnel(deals: Deal[]) {
+  const total = deals.length;
+  const stages: (PipelineStage | "won")[] = [...STAGE_ORDER, "won"];
+
+  return stages.map((stage) => {
+    const count =
+      stage === "won"
+        ? deals.filter((d) => d.outcome === "won").length
+        : deals.filter((d) => {
+            if (d.outcome === "won") return true; // completed deals reached every stage
+            return STAGE_ORDER.indexOf(d.pipelineStage) >= STAGE_ORDER.indexOf(stage);
+          }).length;
+    return { stage: STAGE_LABELS[stage], count, pct: total === 0 ? 0 : count / total };
+  });
+}
+
+/**
+ * Buckets deals CLOSED (won + lost — RESEARCH Assumption A3's broader
+ * "closed" reading, consistent with `forecast-metrics.ts`'s existing
+ * `computeWinRate` treating won+lost as closed) per month, segmented by
+ * owner (DASH-05). Pre-seeds all `months` (default `TRAILING_MONTHS`, 12)
+ * month buckets x all `owners` (default `OWNER_ROSTER`, 5) at `0` BEFORE
+ * accumulating, so a sparse owner/month combination still renders as a real
+ * zero segment, never silently skipped (UI-SPEC "partial" backstop).
+ *
+ * A Won deal is bucketed by `contractSignedDate` (D-04); a Lost deal is
+ * bucketed by `closeDate` (D-05) — never the other way around, since
+ * `closeDate`'s meaning is outcome-dependent (RESEARCH Pitfall 1: forward-
+ * looking "expected close" for open deals vs. "when it actually closed" for
+ * lost deals). Open deals never contribute.
+ */
+export function computeClosedByOwnerPerMonth(
+  deals: Deal[],
+  owners: readonly string[] = OWNER_ROSTER,
+  months: number = TRAILING_MONTHS,
+) {
+  const now = new Date();
+  const buckets = eachMonthOfInterval({
+    start: subMonths(startOfMonth(now), months - 1),
+    end: now,
+  }).map((d) => {
+    const row: Record<string, string | number> = {
+      key: format(d, "yyyy-MM"),
+      month: format(d, "MMM yyyy"),
+    };
+    for (const owner of owners) row[owner] = 0;
+    return row;
+  });
+  const byKey = new Map(buckets.map((b) => [b.key as string, b]));
+
+  for (const deal of deals) {
+    if (deal.outcome !== "won" && deal.outcome !== "lost") continue; // RESEARCH Assumption A3
+    const dateStr = deal.outcome === "won" ? deal.contractSignedDate : deal.closeDate; // D-04/D-05
+    if (!dateStr) continue;
+    const bucket = byKey.get(format(new Date(dateStr), "yyyy-MM"));
+    if (bucket) bucket[deal.owner] = (Number(bucket[deal.owner]) || 0) + 1;
+  }
+
+  return buckets;
 }

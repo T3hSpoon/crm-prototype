@@ -12,8 +12,8 @@ Requirements for milestone v1.2. Each maps to roadmap phases.
 - [x] **DASH-01**: User can view a Unit Sales Target gauge showing actual vs. target units, where units = summed line-item quantities across Won deals, against a seeded mock target
 - [x] **DASH-02**: User can view a Target vs. Actual Sales chart plotting Won-deal unit volume by close date against the target, across the full closed-deal history
 - [x] **DASH-03**: User can view a Leaderboard ranking owners by total Won deal value
-- [ ] **DASH-04**: User can view a Conversion Rate funnel showing stage-by-stage % across Prospect → Lead → Opportunity → Deal → Won
-- [ ] **DASH-05**: User can view a stacked bar chart of deals closed per time period, segmented by owner
+- [x] **DASH-04**: User can view a Conversion Rate funnel showing stage-by-stage % across Prospect → Lead → Opportunity → Deal → Won
+- [x] **DASH-05**: User can view a stacked bar chart of deals closed per time period, segmented by owner
 
 ## v2 Requirements
 
@@ -50,8 +50,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DASH-01 | Phase 6 | Complete |
 | DASH-02 | Phase 6 | Complete |
 | DASH-03 | Phase 6 | Complete |
-| DASH-04 | Phase 6 | Pending |
-| DASH-05 | Phase 6 | Pending |
+| DASH-04 | Phase 6 | Complete |
+| DASH-05 | Phase 6 | Complete |
 
 **Coverage:**
 
