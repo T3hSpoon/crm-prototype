@@ -23,18 +23,11 @@ export function PipelineBoard() {
   const deals = usePipelineStore((s) => s.deals);
   const ownerOptions = useMemo(() => [...new Set(deals.map((d) => d.owner))].sort(), [deals]);
   const [owner, setOwner] = useState("");
-  const [valueMin, setValueMin] = useState("");
-  const [valueMax, setValueMax] = useState("");
   const [closeDateMin, setCloseDateMin] = useState("");
   const [closeDateMax, setCloseDateMax] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [visibleGroups, setVisibleGroups] = useState<PipelineGroup[]>([...GROUPS]);
 
-  const isValueRangeValid = !(
-    valueMin !== "" &&
-    valueMax !== "" &&
-    Number(valueMin) > Number(valueMax)
-  );
   const isCloseDateRangeValid = !(
     closeDateMin !== "" &&
     closeDateMax !== "" &&
@@ -44,12 +37,6 @@ export function PipelineBoard() {
   const columnFilters: ColumnFiltersState = useMemo(() => {
     const filters: ColumnFiltersState = [];
     if (owner) filters.push({ id: "owner", value: owner });
-    if (isValueRangeValid && (valueMin !== "" || valueMax !== "")) {
-      filters.push({
-        id: "value",
-        value: [valueMin === "" ? undefined : Number(valueMin), valueMax === "" ? undefined : Number(valueMax)],
-      });
-    }
     if (isCloseDateRangeValid && (closeDateMin !== "" || closeDateMax !== "")) {
       filters.push({
         id: "closeDate",
@@ -60,15 +47,13 @@ export function PipelineBoard() {
       });
     }
     return filters;
-  }, [owner, valueMin, valueMax, closeDateMin, closeDateMax, isValueRangeValid, isCloseDateRangeValid]);
+  }, [owner, closeDateMin, closeDateMax, isCloseDateRangeValid]);
 
   const groupsToRender = GROUPS.filter((g) => visibleGroups.includes(g));
 
   const handleClearFilters = () => {
     setGlobalFilter("");
     setOwner("");
-    setValueMin("");
-    setValueMax("");
     setCloseDateMin("");
     setCloseDateMax("");
     setSorting([]);
@@ -87,15 +72,10 @@ export function PipelineBoard() {
         owner={owner}
         onOwnerChange={setOwner}
         ownerOptions={ownerOptions}
-        valueMin={valueMin}
-        onValueMinChange={setValueMin}
-        valueMax={valueMax}
-        onValueMaxChange={setValueMax}
         closeDateMin={closeDateMin}
         onCloseDateMinChange={setCloseDateMin}
         closeDateMax={closeDateMax}
         onCloseDateMaxChange={setCloseDateMax}
-        isValueRangeValid={isValueRangeValid}
         isCloseDateRangeValid={isCloseDateRangeValid}
         visibleGroups={visibleGroups}
         onVisibleGroupsChange={setVisibleGroups}
