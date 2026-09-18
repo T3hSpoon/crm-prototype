@@ -58,11 +58,10 @@ export function TargetVsActualChart({ data }: TargetVsActualChartProps) {
                 type="linear"
                 dataKey="target"
                 name="Target"
-                stroke="var(--chart-lost-grid)"
-                fill="var(--chart-lost-grid)"
-                fillOpacity={0.08}
+                stroke="var(--chart-target)"
+                fill="var(--chart-target)"
+                fillOpacity={0.35}
                 strokeWidth={2}
-                strokeDasharray="4 4"
                 dot={false}
               />
               <Area
