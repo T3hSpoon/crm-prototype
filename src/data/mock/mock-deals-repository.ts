@@ -49,6 +49,9 @@ export class MockDealsRepository implements DealsRepository {
       // New deals start with no line items — DEAL-04's line-items UI (plan
       // 02-02) adds them after creation, not via the Add Deal form.
       lineItems: [],
+      // New deals start with no documents — Generate Quote/Agreement/Upload
+      // PDF add to this array after creation (quick task 260918-fis).
+      documents: [],
       // Deal-terms fields, captured via the Add Deal wizard's step 2
       // (Phase 3, DEAL-06) — direct pass-through, no transform.
       prorata: input.prorata,
@@ -83,6 +86,7 @@ export class MockDealsRepository implements DealsRepository {
         | "contractEndDate"
         | "contractSignedDate"
         | "paymentTerms"
+        | "documents"
       >
     >,
   ): Promise<Deal> {

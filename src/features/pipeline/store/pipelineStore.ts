@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import { dealsRepository } from "@/data";
-import type { Deal, NewDealInput, PipelineGroup } from "@/shared/types/deal";
+import type { Deal, DealDocument, NewDealInput, PipelineGroup } from "@/shared/types/deal";
 import { clearPatchFor, fromPipelineGroup } from "@/shared/utils/pipeline-group";
 import type { LostReasonFormValues } from "@/features/pipeline/components/lost-reason-schema";
 import type { WonContractTermsFormValues } from "@/features/pipeline/components/won-contract-terms-schema";
+import { buildAgreementHtml, buildQuoteHtml } from "@/shared/utils/document-templates";
 
 interface PipelineState {
   deals: Deal[];
@@ -23,6 +24,8 @@ interface PipelineState {
       Pick<Deal, "name" | "value" | "owner" | "closeDate" | "lineItems" | "confidenceLevel">
     >,
   ) => Promise<void>;
+  generateDocument: (dealId: string, kind: "quote" | "agreement") => Promise<void>;
+  uploadDocument: (dealId: string, file: File) => Promise<void>;
 }
 
 /**
@@ -105,6 +108,69 @@ export const usePipelineStore = create<PipelineState>()((set, get) => ({
       // calling UI component's own catch can revert local state and show its
       // error banner — never swallow the rejection silently.
       console.error("updateDeal failed", err);
+      throw err;
+    }
+  },
+
+  generateDocument: async (dealId, kind) => {
+    try {
+      const current = get().deals.find((d) => d.id === dealId);
+      if (!current) {
+        throw new Error(`Deal with id "${dealId}" not found`);
+      }
+      const html = kind === "quote" ? buildQuoteHtml(current) : buildAgreementHtml(current);
+      // D-03 (locked): a Blob + object URL — never a PDF-generation library.
+      const blob = new Blob([html], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      const doc: DealDocument = {
+        id: crypto.randomUUID(),
+        fileName: `${kind === "quote" ? "Quote" : "Agreement"} - ${current.company}.html`,
+        format: "HTML",
+        url,
+        createdAt: new Date().toISOString(),
+      };
+      const updated = await dealsRepository.update(dealId, {
+        documents: [...current.documents, doc],
+      });
+      // Replace by id, never by array index (research/PITFALLS.md Pitfall 5).
+      set({ deals: get().deals.map((d) => (d.id === dealId ? updated : d)) });
+    } catch (err) {
+      // Mirrors updateDeal's log+rethrow pattern.
+      console.error("generateDocument failed", err);
+      throw err;
+    }
+  },
+
+  uploadDocument: async (dealId, file) => {
+    try {
+      // Store-level enforcement of the file input's accept="application/pdf"
+      // restriction (mitigates T-fis-02) — the accept attribute alone
+      // doesn't block an OS "All files" picker selection. Checked BEFORE
+      // touching the repository.
+      if (file.type !== "application/pdf") {
+        throw new Error("Only PDF files can be uploaded.");
+      }
+      const current = get().deals.find((d) => d.id === dealId);
+      if (!current) {
+        throw new Error(`Deal with id "${dealId}" not found`);
+      }
+      // The File already IS the real PDF — no Blob wrapping needed.
+      const url = URL.createObjectURL(file);
+      const doc: DealDocument = {
+        id: crypto.randomUUID(),
+        fileName: file.name,
+        format: "PDF",
+        url,
+        createdAt: new Date().toISOString(),
+      };
+      const updated = await dealsRepository.update(dealId, {
+        documents: [...current.documents, doc],
+      });
+      // Replace by id, never by array index (research/PITFALLS.md Pitfall 5).
+      set({ deals: get().deals.map((d) => (d.id === dealId ? updated : d)) });
+    } catch (err) {
+      // Mirrors updateDeal's log+rethrow pattern.
+      console.error("uploadDocument failed", err);
       throw err;
     }
   },

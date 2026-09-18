@@ -25,6 +25,7 @@ function deal(overrides: Partial<Deal>): Deal {
     outcome: overrides.outcome ?? "open",
     createdAt: overrides.createdAt ?? "2026-01-01T00:00:00.000Z",
     lineItems: overrides.lineItems ?? [],
+    documents: overrides.documents ?? [],
     prorata: overrides.prorata ?? false,
     gracePeriodDays: overrides.gracePeriodDays ?? 0,
     contractTermMonths: overrides.contractTermMonths ?? 12,

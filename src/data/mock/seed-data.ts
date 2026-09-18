@@ -105,6 +105,10 @@ function buildSeedDeal(): Deal {
     outcome: isLost ? "lost" : isWon ? "won" : "open",
     createdAt: faker.date.recent({ days: 60 }).toISOString(),
     lineItems,
+    // Every seeded deal starts with no documents — Generate Quote/Agreement/
+    // Upload PDF add to this array only via user interaction (quick task
+    // 260918-fis); no generator ever writes into it.
+    documents: [],
     prorata: faker.datatype.boolean(),
     gracePeriodDays: faker.number.int({ min: 0, max: 90 }),
     contractTermMonths,

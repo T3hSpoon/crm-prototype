@@ -18,6 +18,7 @@ import {
   useLegacyTable,
 } from "@tanstack/react-table/legacy";
 import { ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { StageSelect } from "@/features/pipeline/components/StageSelect";
 import { EditableCell } from "@/features/pipeline/components/EditableCell";
 import { ConfidenceCell } from "@/features/pipeline/components/ConfidenceCell";
@@ -127,6 +128,39 @@ const columns = [
     cell: (info) => (
       <StageSelect dealId={info.row.original.id} currentGroup={toPipelineGroup(info.row.original)} />
     ),
+  }),
+  columnHelper.display({
+    id: "documents",
+    header: "Documents",
+    enableGlobalFilter: false,
+    cell: (info) => {
+      const documents = info.row.original.documents;
+      if (documents.length === 0) {
+        return (
+          <span className="rounded-full bg-background/80 px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            No assets
+          </span>
+        );
+      }
+      return (
+        <div className="flex flex-wrap items-center gap-1">
+          {documents.map((doc) => (
+            <Button key={doc.id} asChild variant="outline" size="xs">
+              <a
+                href={doc.url}
+                download={doc.fileName}
+                title={doc.fileName}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {doc.format.toUpperCase()}
+              </a>
+            </Button>
+          ))}
+        </div>
+      );
+    },
   }),
 ];
 
@@ -267,6 +301,7 @@ export function DealTable({
                         lineItems={row.original.lineItems}
                         value={row.original.value}
                         overridden={hasManualOverride(row.original)}
+                        deal={row.original}
                       />
                     </td>
                   </tr>
