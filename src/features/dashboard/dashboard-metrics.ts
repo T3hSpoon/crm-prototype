@@ -1,6 +1,6 @@
-import { eachMonthOfInterval, format, parseISO, startOfMonth, subMonths } from "date-fns";
+import { eachMonthOfInterval, format, getMonth, parseISO, startOfMonth, subMonths } from "date-fns";
 import type { Deal, PipelineStage } from "@/shared/types/deal";
-import { MONTHLY_UNIT_TARGET, OWNER_ROSTER, TRAILING_MONTHS } from "@/features/dashboard/dashboard-config";
+import { MONTHLY_TARGETS, OWNER_ROSTER, TRAILING_MONTHS } from "@/features/dashboard/dashboard-config";
 
 /**
  * Pure, never-stored derived-value functions for the Dashboard page
@@ -58,11 +58,12 @@ function sumLineItemUnits(deal: Pick<Deal, "lineItems">): number {
  * Buckets Won-deal unit volume (all line-item types, via `sumLineItemUnits`)
  * by `contractSignedDate` month (D-04) into exactly `months` (default
  * `TRAILING_MONTHS`, 12) trailing months ending at the current month
- * (inclusive). Every bucket is pre-seeded at `actual: 0` and
- * `target: MONTHLY_UNIT_TARGET` BEFORE accumulation, so a month with zero
- * Won deals still appears as a real, explicit zero entry in the returned
- * array — it is never silently omitted (the load-bearing correction vs.
- * only emitting buckets that have data). Open/lost deals never contribute,
+ * (inclusive). Every bucket is pre-seeded at `actual: 0` and a `target`
+ * looked up from `MONTHLY_TARGETS` by that bucket's calendar month (via
+ * `getMonth`) BEFORE accumulation, so a month with zero Won deals still
+ * appears as a real, explicit zero entry in the returned array — it is
+ * never silently omitted (the load-bearing correction vs. only emitting
+ * buckets that have data). Open/lost deals never contribute,
  * even if they carry a `closeDate` that happens to fall in-range — only
  * `outcome === "won"` deals are read, and only via `contractSignedDate`
  * (never `closeDate`, which has an unrelated, outcome-dependent meaning for
@@ -77,7 +78,7 @@ export function computeMonthlyWonUnits(deals: Deal[], months: number = TRAILING_
     key: format(d, "yyyy-MM"),
     month: format(d, "MMM yyyy"),
     actual: 0,
-    target: MONTHLY_UNIT_TARGET,
+    target: MONTHLY_TARGETS[getMonth(d)],
   }));
   const byKey = new Map(buckets.map((b) => [b.key, b]));
 
@@ -183,8 +184,9 @@ export function computeConversionFunnel(deals: Deal[]) {
  * Buckets deals CLOSED (won + lost — RESEARCH Assumption A3's broader
  * "closed" reading, consistent with `forecast-metrics.ts`'s existing
  * `computeWinRate` treating won+lost as closed) per month, segmented by
- * owner (DASH-05). Pre-seeds all `months` (default `TRAILING_MONTHS`, 12)
- * month buckets x all `owners` (default `OWNER_ROSTER`, 5) at `0` BEFORE
+ * owner (DASH-05), summing each deal's `value` (not a raw deal count) into
+ * its owner/month cell. Pre-seeds all `months` (default `TRAILING_MONTHS`,
+ * 12) month buckets x all `owners` (default `OWNER_ROSTER`, 5) at `0` BEFORE
  * accumulating, so a sparse owner/month combination still renders as a real
  * zero segment, never silently skipped (UI-SPEC "partial" backstop).
  *
@@ -229,7 +231,7 @@ export function computeClosedByOwnerPerMonth(
     // deals' `closeDate` is a full ISO datetime; `parseISO` parses that identically
     // to `new Date`, so this is a safe uniform fix for both branches.
     const bucket = byKey.get(format(parseISO(dateStr), "yyyy-MM"));
-    if (bucket) bucket[deal.owner] = (Number(bucket[deal.owner]) || 0) + 1;
+    if (bucket) bucket[deal.owner] = (Number(bucket[deal.owner]) || 0) + deal.value;
   }
 
   return buckets;

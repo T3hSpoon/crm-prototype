@@ -8,7 +8,7 @@ import {
   computeConversionFunnel,
   computeClosedByOwnerPerMonth,
 } from "./dashboard-metrics";
-import { OWNER_ROSTER, MONTHLY_UNIT_TARGET } from "@/features/dashboard/dashboard-config";
+import { OWNER_ROSTER, MONTHLY_TARGETS } from "@/features/dashboard/dashboard-config";
 import type { Deal, LineItem } from "@/shared/types/deal";
 
 function lineItem(overrides: Partial<LineItem>): LineItem {
@@ -126,9 +126,12 @@ describe("computeMonthlyWonUnits", () => {
     expect(computeMonthlyWonUnits([])).toHaveLength(12);
   });
 
-  it("pre-seeds every bucket with the configured MONTHLY_UNIT_TARGET", () => {
+  it("pre-seeds each bucket's target from MONTHLY_TARGETS by its calendar month", () => {
     const result = computeMonthlyWonUnits([]);
-    expect(result.every((bucket) => bucket.target === MONTHLY_UNIT_TARGET)).toBe(true);
+    for (const bucket of result) {
+      const monthIndex = Number(bucket.key.slice(5, 7)) - 1;
+      expect(bucket.target).toBe(MONTHLY_TARGETS[monthIndex]);
+    }
   });
 
   it("buckets a Won deal's line-item units into its contractSignedDate month, leaving other months at explicit 0 (never omitted)", () => {
@@ -286,32 +289,34 @@ describe("computeClosedByOwnerPerMonth", () => {
     }
   });
 
-  it("counts a Won deal (bucketed by contractSignedDate) toward its owner's month", () => {
+  it("sums a Won deal's value (bucketed by contractSignedDate) toward its owner's month", () => {
     const won = deal({
       id: "won-1",
       outcome: "won",
       owner: OWNER_ROSTER[0],
+      value: 2500,
       contractSignedDate: new Date().toISOString().slice(0, 10),
     });
 
     const result = computeClosedByOwnerPerMonth([won]);
     const thisMonthKey = format(startOfMonth(new Date()), "yyyy-MM");
     const bucket = result.find((b) => b.key === thisMonthKey);
-    expect(bucket?.[OWNER_ROSTER[0]]).toBe(1);
+    expect(bucket?.[OWNER_ROSTER[0]]).toBe(2500);
   });
 
-  it("counts a Lost deal (bucketed by closeDate) toward its owner's month", () => {
+  it("sums a Lost deal's value (bucketed by closeDate) toward its owner's month", () => {
     const lost = deal({
       id: "lost-1",
       outcome: "lost",
       owner: OWNER_ROSTER[1],
+      value: 750,
       closeDate: new Date().toISOString().slice(0, 10),
     });
 
     const result = computeClosedByOwnerPerMonth([lost]);
     const thisMonthKey = format(startOfMonth(new Date()), "yyyy-MM");
     const bucket = result.find((b) => b.key === thisMonthKey);
-    expect(bucket?.[OWNER_ROSTER[1]]).toBe(1);
+    expect(bucket?.[OWNER_ROSTER[1]]).toBe(750);
   });
 
   it("excludes open deals entirely", () => {

@@ -27,12 +27,18 @@ export const OWNER_ROSTER = [
 export const TRAILING_MONTHS = 12;
 
 /**
- * Mock monthly unit-sales target (units/month) — Claude's Discretion per
- * RESEARCH Assumption A2, calibrated so the gauge (DASH-01) and 06-02's
- * monthly Target-vs-Actual chart (DASH-02) sit near 80-110% most months
- * against the finalized 150-deal, `faker.seed(20260917)` dataset.
+ * Mock per-calendar-month unit-sales targets (units/month), indexed by
+ * `date-fns` `getMonth()` (0 = January … 11 = December) — Claude's
+ * Discretion per RESEARCH Assumption A2, calibrated so the gauge (DASH-01)
+ * and 06-02's monthly Target-vs-Actual chart (DASH-02) sit near 80-110%
+ * most months against the finalized 150-deal, `faker.seed(20260917)`
+ * dataset, while introducing a mild seasonal ramp toward Q4. Because this is
+ * keyed by calendar month rather than trailing-window position, "March's
+ * target" is stable year over year regardless of which 12-month trailing
+ * window is currently displayed. CODE-LEVEL CONFIG ONLY for this pass — no
+ * in-app editing UI, no persistence.
  */
-export const MONTHLY_UNIT_TARGET = 40;
+export const MONTHLY_TARGETS: number[] = [30, 32, 36, 38, 40, 42, 38, 36, 42, 46, 50, 50];
 
-/** DASH-01's gauge target — the trailing-12-month rollup of `MONTHLY_UNIT_TARGET`. */
-export const ANNUAL_UNIT_TARGET = MONTHLY_UNIT_TARGET * TRAILING_MONTHS;
+/** DASH-01's gauge target — the sum of all 12 `MONTHLY_TARGETS` entries. */
+export const ANNUAL_UNIT_TARGET = MONTHLY_TARGETS.reduce((sum, t) => sum + t, 0);

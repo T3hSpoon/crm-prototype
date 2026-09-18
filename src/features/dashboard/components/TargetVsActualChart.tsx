@@ -1,9 +1,8 @@
 import {
-  Bar,
+  Area,
+  AreaChart,
   CartesianGrid,
-  ComposedChart,
   Legend,
-  Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -18,13 +17,13 @@ interface TargetVsActualChartProps {
 
 /**
  * Target vs. Actual Sales chart (DASH-02) — 12 trailing monthly buckets of
- * Won-deal unit volume (Bar, "Actual") against the seeded monthly unit
- * target (Line, "Target"), plotted on ONE shared y-axis (units). Never a
- * dual-axis composition — both series are the same unit, so a shared axis
- * is both the safer and the more correct representation (RESEARCH.md
- * anti-pattern: dual-axis charts invent a correlation that isn't in the
- * data). Card/CardContent + title + empty-state shape mirrors
- * `LostBreakdownChart.tsx` exactly.
+ * Won-deal unit volume ("Actual") against each bucket's per-calendar-month
+ * seeded unit target ("Target"), rendered as two overlaid (non-stacked)
+ * Area series on ONE shared y-axis (units). Never a dual-axis composition —
+ * both series are the same unit, so a shared axis is both the safer and the
+ * more correct representation (RESEARCH.md anti-pattern: dual-axis charts
+ * invent a correlation that isn't in the data). Card/CardContent + title +
+ * empty-state shape mirrors `LostBreakdownChart.tsx` exactly.
  */
 export function TargetVsActualChart({ data }: TargetVsActualChartProps) {
   const isEmpty = data.every((bucket) => bucket.actual === 0);
@@ -39,7 +38,7 @@ export function TargetVsActualChart({ data }: TargetVsActualChartProps) {
           </p>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart data={data}>
+            <AreaChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-lost-grid)" />
               <XAxis dataKey="month" tick={{ fill: "#898781", fontSize: 12 }} />
               <YAxis
@@ -55,16 +54,27 @@ export function TargetVsActualChart({ data }: TargetVsActualChartProps) {
               />
               <Tooltip />
               <Legend />
-              <Bar dataKey="actual" name="Actual" fill="var(--chart-gauge-fill)" radius={[4, 4, 0, 0]} />
-              <Line
+              <Area
+                type="monotone"
+                dataKey="actual"
+                name="Actual"
+                stroke="var(--chart-gauge-fill)"
+                fill="var(--chart-gauge-fill)"
+                fillOpacity={0.35}
+                strokeWidth={2}
+              />
+              <Area
+                type="monotone"
                 dataKey="target"
                 name="Target"
                 stroke="var(--chart-lost-grid)"
-                strokeDasharray="4 4"
+                fill="var(--chart-lost-grid)"
+                fillOpacity={0.08}
                 strokeWidth={2}
+                strokeDasharray="4 4"
                 dot={false}
               />
-            </ComposedChart>
+            </AreaChart>
           </ResponsiveContainer>
         )}
       </CardContent>
