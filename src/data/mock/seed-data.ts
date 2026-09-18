@@ -18,6 +18,15 @@ import { buildQuoteHtml, buildAgreementHtml } from "@/shared/utils/document-temp
 const STAGES: PipelineStage[] = ["prospect", "lead", "opportunity", "deal"];
 /** Standard contract-term lengths (seed data only — the live Add Deal form still accepts any value). */
 const CONTRACT_TERM_MONTHS = [3, 6, 12, 24, 36, 48, 60] as const;
+/** Same 5-option list as lost-reason-schema.ts's `category` enum (Phase 3.1, LOST-01). */
+const LOST_REASON_CATEGORIES = ["Price", "Timing", "Competitor", "No Budget", "Other"] as const;
+const LOST_REASON_NOTES: Record<(typeof LOST_REASON_CATEGORIES)[number], string[]> = {
+  Price: ["Budget didn't stretch to our quote", "Went with a cheaper vendor"],
+  Timing: ["Project got pushed to next fiscal year", "Not ready to commit yet"],
+  Competitor: ["Chose a competing vendor", "Already had a relationship elsewhere"],
+  "No Budget": ["Budget got cut before signing", "No budget allocated this cycle"],
+  Other: [],
+};
 const FREQUENCIES: DealFrequency[] = ["monthly", "quarterly", "quadrimestral", "semi-annual", "annually"];
 const CURRENCIES: DealCurrency[] = ["USD", "EUR", "GBP"];
 const CUSTOMER_TYPES: CustomerType[] = ["government", "private-utility", "private-fleet", "similar"];
@@ -59,6 +68,20 @@ function buildSeedDeal(): Deal {
   const isLost = faker.datatype.boolean({ probability: 0.15 });
   const isWon = !isLost && faker.datatype.boolean({ probability: 0.15 });
   const contractTermMonths = faker.helpers.arrayElement(CONTRACT_TERM_MONTHS);
+  // Mirrors pipelineStore.moveToLost's own format ("Category" or
+  // "Category: note") — same 5-option category list as lost-reason-schema.ts
+  // (Phase 3.1, LOST-01). ~60% of Lost deals also get a note, matching the
+  // real form's note being optional rather than always present.
+  const lostReasonCategory = isLost ? faker.helpers.arrayElement(LOST_REASON_CATEGORIES) : undefined;
+  const lostReasonNote =
+    isLost && LOST_REASON_NOTES[lostReasonCategory!].length > 0 && faker.datatype.boolean({ probability: 0.6 })
+      ? faker.helpers.arrayElement(LOST_REASON_NOTES[lostReasonCategory!])
+      : undefined;
+  const lostReason = isLost
+    ? lostReasonNote
+      ? `${lostReasonCategory}: ${lostReasonNote}`
+      : lostReasonCategory
+    : undefined;
 
   // Every deal (DEAL-04/DEAL-05 seed data) gets one `product` "units" line
   // item priced $250-350 (hardware) and at least one `service` line item
@@ -105,6 +128,7 @@ function buildSeedDeal(): Deal {
         : faker.date.soon({ days: 90 }).toISOString(),
     pipelineStage,
     outcome: isLost ? "lost" : isWon ? "won" : "open",
+    lostReason,
     createdAt: faker.date.recent({ days: 60 }).toISOString(),
     lineItems,
     // Every seeded deal starts with no documents — Generate Quote/Agreement/

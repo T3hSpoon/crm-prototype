@@ -28,6 +28,20 @@ describe("seedDeals", () => {
     }
   });
 
+  it("every Lost deal has a lostReason starting with one of the 5 schema categories; no non-Lost deal has one", () => {
+    const CATEGORIES = ["Price", "Timing", "Competitor", "No Budget", "Other"];
+    const lostDeals = seedDeals.filter((d) => d.outcome === "lost");
+    expect(lostDeals.length).toBeGreaterThan(0);
+    for (const deal of lostDeals) {
+      expect(deal.lostReason).toBeTruthy();
+      const category = deal.lostReason!.split(":")[0].trim();
+      expect(CATEGORIES).toContain(category);
+    }
+    for (const deal of seedDeals.filter((d) => d.outcome !== "lost")) {
+      expect(deal.lostReason).toBeUndefined();
+    }
+  });
+
   it("at least 2 Won deals are pre-populated with generated documents, so the Documents column isn't uniformly empty on first load", () => {
     const dealsWithDocs = seedDeals.filter((d) => d.documents.length > 0);
     expect(dealsWithDocs.length).toBeGreaterThanOrEqual(2);
