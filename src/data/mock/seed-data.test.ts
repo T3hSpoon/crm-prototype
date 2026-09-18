@@ -21,6 +21,13 @@ describe("seedDeals", () => {
     }
   });
 
+  it("every deal's contractTermMonths is one of the standard 3/6/12/24/36/48/60 lengths", () => {
+    const STANDARD_TERMS = [3, 6, 12, 24, 36, 48, 60];
+    for (const deal of seedDeals) {
+      expect(STANDARD_TERMS).toContain(deal.contractTermMonths);
+    }
+  });
+
   it("every OWNER_ROSTER name has at least one Won deal (D-02's Leaderboard-visibility criterion)", () => {
     const wonOwners = new Set(
       seedDeals.filter((d) => d.outcome === "won").map((d) => d.owner),

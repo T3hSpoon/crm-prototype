@@ -14,6 +14,8 @@ import { sumLineItems } from "@/shared/utils/line-items";
 import { OWNER_ROSTER, TRAILING_MONTHS } from "@/features/dashboard/dashboard-config";
 
 const STAGES: PipelineStage[] = ["prospect", "lead", "opportunity", "deal"];
+/** Standard contract-term lengths (seed data only — the live Add Deal form still accepts any value). */
+const CONTRACT_TERM_MONTHS = [3, 6, 12, 24, 36, 48, 60] as const;
 const FREQUENCIES: DealFrequency[] = ["monthly", "quarterly", "quadrimestral", "semi-annual", "annually"];
 const CURRENCIES: DealCurrency[] = ["USD", "EUR", "GBP"];
 const CUSTOMER_TYPES: CustomerType[] = ["government", "private-utility", "private-fleet", "similar"];
@@ -54,7 +56,7 @@ function buildSeedDeal(): Deal {
   // on first load without requiring a manual Won transition first.
   const isLost = faker.datatype.boolean({ probability: 0.15 });
   const isWon = !isLost && faker.datatype.boolean({ probability: 0.15 });
-  const contractTermMonths = faker.number.int({ min: 0, max: 60 });
+  const contractTermMonths = faker.helpers.arrayElement(CONTRACT_TERM_MONTHS);
 
   // Every deal (DEAL-04/DEAL-05 seed data) gets one `product` "units" line
   // item priced $250-350 (hardware) and at least one `service` line item
