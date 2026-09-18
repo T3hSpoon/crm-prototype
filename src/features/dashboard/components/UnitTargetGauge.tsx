@@ -46,7 +46,7 @@ export function UnitTargetGauge({ actual, target, wonDealCount }: UnitTargetGaug
                   dataKey="value"
                   background={{ fill: "var(--chart-gauge-track)" }}
                   fill="var(--chart-gauge-fill)"
-                  cornerRadius={6}
+                  cornerRadius={0}
                 />
               </RadialBarChart>
             </ResponsiveContainer>
