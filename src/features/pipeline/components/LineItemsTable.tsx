@@ -77,6 +77,11 @@ export function LineItemsTable({ dealId, lineItems, overridden, deal }: LineItem
   // the removed drawer's own computation. Uses the last-committed `lineItems`
   // prop, not the form's live in-progress draft.
   const computed = sumLineItems(lineItems);
+  // A Lost deal is a closed/terminal record — no further line-item edits or
+  // new document generation. The Lost Reason display below takes the place
+  // of "Add Line Item" for these deals. Existing documents remain viewable
+  // via DealTable's own Documents column regardless of this flag.
+  const isLost = deal.outcome === "lost";
 
   const form = useForm<LineItemsFormInput, unknown, LineItemsFormValues>({
     resolver: zodResolver(lineItemsSchema),
@@ -364,61 +369,72 @@ export function LineItemsTable({ dealId, lineItems, overridden, deal }: LineItem
           </tbody>
         </table>
       </div>
-      <div className="flex items-center gap-2">
-        <Button type="button" variant="outline" size="sm" disabled={isPending} onClick={handleAdd}>
-          Add Line Item
-        </Button>
-        {overridden && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={isPending}
-            onClick={handleResetToSum}
-          >
-            <RotateCcw data-icon="inline-start" />
-            Reset to sum ({currencyFormatter.format(computed)})
+      {isLost ? (
+        deal.lostReason && (
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs font-medium text-muted-foreground">Lost Reason</span>
+            <span className="text-sm">{deal.lostReason}</span>
+          </div>
+        )
+      ) : (
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="outline" size="sm" disabled={isPending} onClick={handleAdd}>
+            Add Line Item
           </Button>
-        )}
-      </div>
+          {overridden && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isPending}
+              onClick={handleResetToSum}
+            >
+              <RotateCcw data-icon="inline-start" />
+              Reset to sum ({currencyFormatter.format(computed)})
+            </Button>
+          )}
+        </div>
+      )}
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}
-      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={isDocPending}
-          onClick={() => void handleGenerate("quote")}
-        >
-          Generate Quote
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={isDocPending}
-          onClick={() => void handleGenerate("agreement")}
-        >
-          Generate Agreement
-        </Button>
-        <Input
-          type="file"
-          accept="application/pdf"
-          disabled={isDocPending}
-          className="max-w-48"
-          onChange={(e) => void handleUpload(e)}
-          aria-label="Upload PDF"
-        />
-        {deal.documents.length > 0 && (
-          <span className="text-xs text-muted-foreground">
-            {deal.documents.length} document{deal.documents.length === 1 ? "" : "s"}
-          </span>
-        )}
-      </div>
+      {!isLost && (
+        <div className="flex flex-wrap items-center gap-2 border-t border-border pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={isDocPending}
+            onClick={() => void handleGenerate("quote")}
+          >
+            Generate Quote
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={isDocPending}
+            onClick={() => void handleGenerate("agreement")}
+          >
+            Generate Agreement
+          </Button>
+          <Input
+            type="file"
+            accept="application/pdf"
+            disabled={isDocPending}
+            className="max-w-48"
+            onChange={(e) => void handleUpload(e)}
+            aria-label="Upload PDF"
+          />
+          {deal.documents.length > 0 && (
+            <span className="text-xs text-muted-foreground">
+              {deal.documents.length} document{deal.documents.length === 1 ? "" : "s"}
+            </span>
+          )}
+        </div>
+      )}
       {docError && (
         <p role="alert" className="text-sm text-destructive">
           {docError}
