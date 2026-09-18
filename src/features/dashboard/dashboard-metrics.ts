@@ -183,8 +183,9 @@ export function computeConversionFunnel(deals: Deal[]) {
  * Buckets deals CLOSED (won + lost — RESEARCH Assumption A3's broader
  * "closed" reading, consistent with `forecast-metrics.ts`'s existing
  * `computeWinRate` treating won+lost as closed) per month, segmented by
- * owner (DASH-05). Pre-seeds all `months` (default `TRAILING_MONTHS`, 12)
- * month buckets x all `owners` (default `OWNER_ROSTER`, 5) at `0` BEFORE
+ * owner (DASH-05), summing each deal's `value` (not a raw deal count) into
+ * its owner/month cell. Pre-seeds all `months` (default `TRAILING_MONTHS`,
+ * 12) month buckets x all `owners` (default `OWNER_ROSTER`, 5) at `0` BEFORE
  * accumulating, so a sparse owner/month combination still renders as a real
  * zero segment, never silently skipped (UI-SPEC "partial" backstop).
  *
@@ -229,7 +230,7 @@ export function computeClosedByOwnerPerMonth(
     // deals' `closeDate` is a full ISO datetime; `parseISO` parses that identically
     // to `new Date`, so this is a safe uniform fix for both branches.
     const bucket = byKey.get(format(parseISO(dateStr), "yyyy-MM"));
-    if (bucket) bucket[deal.owner] = (Number(bucket[deal.owner]) || 0) + 1;
+    if (bucket) bucket[deal.owner] = (Number(bucket[deal.owner]) || 0) + deal.value;
   }
 
   return buckets;

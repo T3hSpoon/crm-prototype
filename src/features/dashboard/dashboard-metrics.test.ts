@@ -286,32 +286,34 @@ describe("computeClosedByOwnerPerMonth", () => {
     }
   });
 
-  it("counts a Won deal (bucketed by contractSignedDate) toward its owner's month", () => {
+  it("sums a Won deal's value (bucketed by contractSignedDate) toward its owner's month", () => {
     const won = deal({
       id: "won-1",
       outcome: "won",
       owner: OWNER_ROSTER[0],
+      value: 2500,
       contractSignedDate: new Date().toISOString().slice(0, 10),
     });
 
     const result = computeClosedByOwnerPerMonth([won]);
     const thisMonthKey = format(startOfMonth(new Date()), "yyyy-MM");
     const bucket = result.find((b) => b.key === thisMonthKey);
-    expect(bucket?.[OWNER_ROSTER[0]]).toBe(1);
+    expect(bucket?.[OWNER_ROSTER[0]]).toBe(2500);
   });
 
-  it("counts a Lost deal (bucketed by closeDate) toward its owner's month", () => {
+  it("sums a Lost deal's value (bucketed by closeDate) toward its owner's month", () => {
     const lost = deal({
       id: "lost-1",
       outcome: "lost",
       owner: OWNER_ROSTER[1],
+      value: 750,
       closeDate: new Date().toISOString().slice(0, 10),
     });
 
     const result = computeClosedByOwnerPerMonth([lost]);
     const thisMonthKey = format(startOfMonth(new Date()), "yyyy-MM");
     const bucket = result.find((b) => b.key === thisMonthKey);
-    expect(bucket?.[OWNER_ROSTER[1]]).toBe(1);
+    expect(bucket?.[OWNER_ROSTER[1]]).toBe(750);
   });
 
   it("excludes open deals entirely", () => {
