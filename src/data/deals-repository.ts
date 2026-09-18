@@ -28,6 +28,7 @@ export interface DealsRepository {
         | "contractEndDate"
         | "contractSignedDate"
         | "paymentTerms"
+        | "documents"
       >
     >,
   ): Promise<Deal>;

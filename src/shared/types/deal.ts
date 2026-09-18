@@ -54,6 +54,27 @@ export interface LineItem {
   type: LineItemType;
 }
 
+/** Document format produced by a deal's document mechanism (quick task 260918-fis). */
+export type DealDocumentFormat = "HTML" | "PDF";
+
+/**
+ * A single generated-or-uploaded document attached to a Deal (quick task
+ * 260918-fis) — a Quote/Agreement ("HTML", built via
+ * `shared/utils/document-templates.ts` and turned into a `Blob`/object URL)
+ * or an uploaded contract ("PDF", the real uploaded `File` turned directly
+ * into an object URL). Never persisted beyond the browser session — `url` is
+ * only valid for the lifetime of the page (D-02, locked).
+ */
+export interface DealDocument {
+  id: string;
+  fileName: string;
+  format: DealDocumentFormat;
+  /** Object URL from `URL.createObjectURL` — valid only for the browser session. */
+  url: string;
+  /** ISO 8601 */
+  createdAt: string;
+}
+
 export interface Deal {
   id: string;
   name: string;
@@ -84,6 +105,13 @@ export interface Deal {
   createdAt: string;
   /** Product/service composition (Phase 2, DEAL-04). Starts empty at creation. */
   lineItems: LineItem[];
+  /**
+   * Generated (Quote/Agreement) and uploaded documents (quick task
+   * 260918-fis). Like `lineItems`, starts empty and is never part of
+   * `NewDealInput` — new deals get it set only inside
+   * `MockDealsRepository.create()`.
+   */
+  documents: DealDocument[];
   /** Deal-terms fields captured via the Add Deal wizard's step 2 (Phase 3, DEAL-06). */
   prorata: boolean;
   gracePeriodDays: number;
