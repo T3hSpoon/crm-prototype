@@ -117,7 +117,7 @@ const columns = [
   }),
   columnHelper.display({
     id: "lifetimeContractValue",
-    header: "Lifetime Contract Value",
+    header: "LTV",
     enableGlobalFilter: false,
     cell: (info) => currencyFormatter.format(computeLifetimeContractValue(info.row.original)),
   }),

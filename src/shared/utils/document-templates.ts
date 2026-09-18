@@ -183,7 +183,7 @@ export function buildAgreementHtml(
       <dd>${deal.prorata ? "Yes" : "No"}</dd>
       <dt>Grace Period</dt>
       <dd>${deal.gracePeriodDays} days</dd>
-      <dt>Lifetime Contract Value</dt>
+      <dt>LTV</dt>
       <dd>${currencyFormatter.format(ltv)}</dd>
     </dl>
   </body>

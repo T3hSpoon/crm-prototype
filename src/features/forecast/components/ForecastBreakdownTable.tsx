@@ -56,7 +56,7 @@ export function ForecastBreakdownTable({ deals }: ForecastBreakdownTableProps) {
             <th className="px-4 py-2 text-sm font-semibold">ARPU</th>
             <th className="px-4 py-2 text-sm font-semibold">MRR</th>
             <th className="px-4 py-2 text-sm font-semibold">ARR</th>
-            <th className="px-4 py-2 text-sm font-semibold">Lifetime Contract Value</th>
+            <th className="px-4 py-2 text-sm font-semibold">LTV</th>
             <th className="px-4 py-2 text-sm font-semibold">Contract Length</th>
           </tr>
         </thead>
