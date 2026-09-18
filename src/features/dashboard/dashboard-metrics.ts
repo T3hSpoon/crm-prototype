@@ -1,6 +1,7 @@
 import { eachMonthOfInterval, format, getMonth, parseISO, startOfMonth, subMonths } from "date-fns";
 import type { Deal, PipelineStage } from "@/shared/types/deal";
 import { MONTHLY_TARGETS, OWNER_ROSTER, TRAILING_MONTHS } from "@/features/dashboard/dashboard-config";
+import { computeMrr, computeQuantity, computeLifetimeContractValue } from "@/shared/utils/deal-metrics";
 
 /**
  * Pure, never-stored derived-value functions for the Dashboard page
@@ -108,6 +109,16 @@ export function computeMonthlyWonUnits(deals: Deal[], months: number = TRAILING_
 export function computeOwnerLeaderboard(deals: Deal[]) {
   const totals = new Map<string, number>(OWNER_ROSTER.map((owner) => [owner, 0]));
   const counts = new Map<string, number>(OWNER_ROSTER.map((owner) => [owner, 0]));
+  const ltvTotals = new Map<string, number>(OWNER_ROSTER.map((owner) => [owner, 0]));
+  // ARPU inputs: summed across every Won deal's SERVICE line items (mirrors
+  // deal-metrics.ts's computeMrr/computeQuantity service-only scope). Kept as
+  // separate MRR/quantity running totals (not an average-of-averages) so the
+  // owner-level ARPU is a true quantity-weighted average — a deal with 100
+  // service units pulls the average proportionally more than a deal with 1,
+  // and mixing unit types (different services) is captured naturally since
+  // both totals are dollar/unit sums, not per-type breakdowns.
+  const mrrTotals = new Map<string, number>(OWNER_ROSTER.map((owner) => [owner, 0]));
+  const quantityTotals = new Map<string, number>(OWNER_ROSTER.map((owner) => [owner, 0]));
 
   for (const d of deals) {
     if (d.outcome !== "won") continue;
@@ -119,10 +130,24 @@ export function computeOwnerLeaderboard(deals: Deal[]) {
     if (!totals.has(d.owner)) continue;
     totals.set(d.owner, (totals.get(d.owner) ?? 0) + d.value);
     counts.set(d.owner, (counts.get(d.owner) ?? 0) + 1);
+    ltvTotals.set(d.owner, (ltvTotals.get(d.owner) ?? 0) + computeLifetimeContractValue(d));
+    mrrTotals.set(d.owner, (mrrTotals.get(d.owner) ?? 0) + computeMrr(d));
+    quantityTotals.set(d.owner, (quantityTotals.get(d.owner) ?? 0) + computeQuantity(d));
   }
 
   return [...totals.entries()]
-    .map(([owner, wonValue]) => ({ owner, wonValue, wonCount: counts.get(owner) ?? 0 }))
+    .map(([owner, wonValue]) => {
+      const quantity = quantityTotals.get(owner) ?? 0;
+      return {
+        owner,
+        wonValue,
+        wonCount: counts.get(owner) ?? 0,
+        ltv: ltvTotals.get(owner) ?? 0,
+        // null (never 0/NaN) when the owner has no service-line-item units to
+        // weight by — mirrors deal-metrics.ts's computeArpu null contract (D-06).
+        arpu: quantity === 0 ? null : (mrrTotals.get(owner) ?? 0) / quantity,
+      };
+    })
     .sort((a, b) => b.wonValue - a.wonValue);
 }
 

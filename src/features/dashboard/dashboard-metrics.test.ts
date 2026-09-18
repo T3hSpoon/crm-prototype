@@ -194,9 +194,11 @@ describe("computeOwnerLeaderboard", () => {
     expect(result.map((e) => e.owner).sort()).toEqual([...OWNER_ROSTER].sort());
     expect(result.every((e) => e.wonValue === 0)).toBe(true);
     expect(result.every((e) => e.wonCount === 0)).toBe(true);
+    expect(result.every((e) => e.ltv === 0)).toBe(true);
+    expect(result.every((e) => e.arpu === null)).toBe(true);
   });
 
-  it("an owner with zero Won deals still appears with wonValue: 0 and wonCount: 0 (never omitted)", () => {
+  it("an owner with zero Won deals still appears with wonValue: 0, wonCount: 0, ltv: 0, arpu: null (never omitted)", () => {
     const won = deal({ id: "won-1", outcome: "won", owner: OWNER_ROSTER[0], value: 5000 });
     const result = computeOwnerLeaderboard([won]);
 
@@ -205,6 +207,50 @@ describe("computeOwnerLeaderboard", () => {
     expect(zeroOwners).toHaveLength(4);
     expect(zeroOwners.every((e) => e.wonValue === 0)).toBe(true);
     expect(zeroOwners.every((e) => e.wonCount === 0)).toBe(true);
+    expect(zeroOwners.every((e) => e.ltv === 0)).toBe(true);
+    expect(zeroOwners.every((e) => e.arpu === null)).toBe(true);
+  });
+
+  it("sums LTV and computes a quantity-weighted (not deal-averaged) ARPU across an owner's Won deals", () => {
+    // Deal 1: 10 service units @ $100 -> MRR 1000, 12mo term -> LTV 12000, per-deal ARPU 100
+    const big = deal({
+      id: "big",
+      outcome: "won",
+      owner: OWNER_ROSTER[0],
+      contractTermMonths: 12,
+      lineItems: [lineItem({ id: "li-big", type: "service", units: 10, unitPrice: 100 })],
+    });
+    // Deal 2: 5 service units @ $40 -> MRR 200, 6mo term -> LTV 1200, per-deal ARPU 40
+    const small = deal({
+      id: "small",
+      outcome: "won",
+      owner: OWNER_ROSTER[0],
+      contractTermMonths: 6,
+      lineItems: [lineItem({ id: "li-small", type: "service", units: 5, unitPrice: 40 })],
+    });
+
+    const result = computeOwnerLeaderboard([big, small]);
+    const entry = result.find((e) => e.owner === OWNER_ROSTER[0]);
+
+    expect(entry?.ltv).toBe(13200); // 12000 + 1200
+    // Weighted: totalMRR(1200) / totalQuantity(15) = 80 — distinct from the
+    // naive average of per-deal ARPUs, (100 + 40) / 2 = 70, which this must NOT equal.
+    expect(entry?.arpu).toBe(80);
+    expect(entry?.arpu).not.toBe(70);
+  });
+
+  it("ARPU is null when an owner's Won deals have product-only line items (no service units to weight by)", () => {
+    const productOnly = deal({
+      id: "product-only",
+      outcome: "won",
+      owner: OWNER_ROSTER[1],
+      lineItems: [lineItem({ id: "li-p", type: "product", units: 3, unitPrice: 500 })],
+    });
+    const result = computeOwnerLeaderboard([productOnly]);
+    const entry = result.find((e) => e.owner === OWNER_ROSTER[1]);
+    expect(entry?.arpu).toBeNull();
+    // LTV still counts the one-time product subtotal even with no service revenue.
+    expect(entry?.ltv).toBe(1500);
   });
 
   it("sums Won-deal value and counts Won deals per owner, excluding open/lost deals", () => {

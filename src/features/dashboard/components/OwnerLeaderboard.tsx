@@ -46,6 +46,8 @@ export function OwnerLeaderboard({ entries }: OwnerLeaderboardProps) {
                   <th className="px-4 py-2 text-sm font-semibold">Owner</th>
                   <th className="px-4 py-2 text-sm font-semibold">Value</th>
                   <th className="px-4 py-2 text-sm font-semibold">Contracts</th>
+                  <th className="px-4 py-2 text-sm font-semibold">LTV</th>
+                  <th className="px-4 py-2 text-sm font-semibold">ARPU</th>
                 </tr>
               </thead>
               <tbody>
@@ -61,6 +63,10 @@ export function OwnerLeaderboard({ entries }: OwnerLeaderboardProps) {
                       {currencyFormatter.format(entry.wonValue)}
                     </td>
                     <td className="px-4 py-2 tabular-nums">{entry.wonCount}</td>
+                    <td className="px-4 py-2 tabular-nums">{currencyFormatter.format(entry.ltv)}</td>
+                    <td className="px-4 py-2 tabular-nums">
+                      {entry.arpu === null ? "—" : currencyFormatter.format(entry.arpu)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
