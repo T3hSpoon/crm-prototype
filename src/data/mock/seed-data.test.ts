@@ -28,6 +28,18 @@ describe("seedDeals", () => {
     }
   });
 
+  it("at least 2 Won deals are pre-populated with generated documents, so the Documents column isn't uniformly empty on first load", () => {
+    const dealsWithDocs = seedDeals.filter((d) => d.documents.length > 0);
+    expect(dealsWithDocs.length).toBeGreaterThanOrEqual(2);
+    for (const deal of dealsWithDocs) {
+      expect(deal.outcome).toBe("won");
+      for (const doc of deal.documents) {
+        expect(doc.format).toBe("HTML");
+        expect(doc.url.startsWith("blob:")).toBe(true);
+      }
+    }
+  });
+
   it("every OWNER_ROSTER name has at least one Won deal (D-02's Leaderboard-visibility criterion)", () => {
     const wonOwners = new Set(
       seedDeals.filter((d) => d.outcome === "won").map((d) => d.owner),

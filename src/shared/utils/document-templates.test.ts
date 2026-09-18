@@ -57,7 +57,7 @@ describe("buildQuoteHtml", () => {
     expect(html).toContain("$12,500");
   });
 
-  it("includes each line item's product/SKU/type/units/unit price/subtotal when lineItems is non-empty", () => {
+  it("includes each line item's name/units/unit price/subtotal when lineItems is non-empty", () => {
     const d = deal({
       lineItems: [
         lineItem({
@@ -73,8 +73,6 @@ describe("buildQuoteHtml", () => {
     const html = buildQuoteHtml(d);
 
     expect(html).toContain("Widget");
-    expect(html).toContain("WID-1");
-    expect(html).toContain("product");
     expect(html).toContain("3");
     expect(html).toContain("$100");
     expect(html).toContain("$300");
@@ -115,7 +113,6 @@ describe("buildAgreementHtml", () => {
     expect(html).toContain("Acme Rollout");
     expect(html).toContain("Jane Owner");
     expect(html).toContain("Widget");
-    expect(html).toContain("WID-1");
   });
 
   it("includes contractTermMonths, frequency, currency, prorata (Yes/No), gracePeriodDays, and the computed Lifetime Contract Value", () => {

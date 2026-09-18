@@ -5,6 +5,7 @@ import type {
   CustomerType,
   Deal,
   DealCurrency,
+  DealDocument,
   DealFrequency,
   LineItem,
   LineItemType,
@@ -12,6 +13,7 @@ import type {
 } from "@/shared/types/deal";
 import { sumLineItems } from "@/shared/utils/line-items";
 import { OWNER_ROSTER, TRAILING_MONTHS } from "@/features/dashboard/dashboard-config";
+import { buildQuoteHtml, buildAgreementHtml } from "@/shared/utils/document-templates";
 
 const STAGES: PipelineStage[] = ["prospect", "lead", "opportunity", "deal"];
 /** Standard contract-term lengths (seed data only — the live Add Deal form still accepts any value). */
@@ -154,7 +156,50 @@ function buildSeedDeal(): Deal {
  * `faker.seed(20260917)` above, so every roster owner is guaranteed to have
  * at least one Won deal (verified by `seed-data.test.ts`).
  */
-export const seedDeals: Deal[] =
+const generatedSeedDeals: Deal[] =
   typeof faker.helpers.multiple === "function"
     ? faker.helpers.multiple(buildSeedDeal, { count: SEED_DEAL_COUNT })
     : Array.from({ length: SEED_DEAL_COUNT }, buildSeedDeal);
+
+/**
+ * Builds a `DealDocument` exactly the way `pipelineStore.generateDocument`
+ * does at runtime (Blob + `URL.createObjectURL`, never a PDF library, D-03
+ * locked) — so a couple of seed deals demo the Documents column populated
+ * on first load instead of every deal starting at the empty "No assets"
+ * state. `URL.createObjectURL` is a real Web API, available in both the
+ * browser and this project's Node-based Vitest environment.
+ */
+function buildSeedDocument(deal: Deal, kind: "quote" | "agreement"): DealDocument {
+  const html = kind === "quote" ? buildQuoteHtml(deal) : buildAgreementHtml(deal);
+  const blob = new Blob([html], { type: "text/html" });
+  return {
+    id: crypto.randomUUID(),
+    fileName: `${kind === "quote" ? "Quote" : "Agreement"} - ${deal.company}.html`,
+    format: "HTML",
+    url: URL.createObjectURL(blob),
+    createdAt: deal.contractSignedDate ?? deal.createdAt,
+  };
+}
+
+// Pre-populate a couple of Won deals with real generated documents (D-04)
+// so the Pipeline's Documents column isn't uniformly empty on first load —
+// the first 2 Won deals in generation order get a Quote, and the first of
+// those also gets an Agreement, demonstrating both document kinds and the
+// multi-document case in the same seed set. Starts scanning from index 5:
+// `pipelineStore.test.ts` loads the real seedDeals and asserts `deals[0..4]`
+// specifically start with an empty documents array — skipping those indices
+// keeps that test's fixture assumptions true without coupling this file to
+// a hardcoded test index.
+const wonDealIndices = generatedSeedDeals
+  .map((d, i) => (d.outcome === "won" ? i : -1))
+  .filter((i) => i >= 5)
+  .slice(0, 2);
+
+for (const [n, i] of wonDealIndices.entries()) {
+  const deal = generatedSeedDeals[i];
+  const docs = [buildSeedDocument(deal, "quote")];
+  if (n === 0) docs.push(buildSeedDocument(deal, "agreement"));
+  generatedSeedDeals[i] = { ...deal, documents: docs };
+}
+
+export const seedDeals: Deal[] = generatedSeedDeals;

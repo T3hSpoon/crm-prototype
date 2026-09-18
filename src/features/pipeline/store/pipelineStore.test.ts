@@ -13,10 +13,15 @@ describe("pipelineStore document actions", () => {
     await usePipelineStore.getState().load();
   });
 
-  it("a freshly loaded deal's documents array starts empty", () => {
+  // `seed-data.ts` intentionally pre-populates a couple of Won deals (from
+  // index 5 onward) with real generated documents so the Pipeline's
+  // Documents column isn't uniformly empty on first load — so this checks
+  // only the specific indices (0-4) the tests below actually exercise as
+  // their "before" baseline, not every deal in the full seed set.
+  it("deals[0..4] (this file's own test fixtures) start with an empty documents array", () => {
     const deals = usePipelineStore.getState().deals;
-    expect(deals.length).toBeGreaterThan(0);
-    for (const deal of deals) {
+    expect(deals.length).toBeGreaterThan(4);
+    for (const deal of deals.slice(0, 5)) {
       expect(deal.documents).toEqual([]);
     }
   });
