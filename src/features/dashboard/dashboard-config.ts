@@ -38,7 +38,9 @@ export const TRAILING_MONTHS = 12;
  * window is currently displayed. CODE-LEVEL CONFIG ONLY for this pass — no
  * in-app editing UI, no persistence.
  */
-export const MONTHLY_TARGETS: number[] = [30, 32, 36, 38, 40, 42, 38, 36, 42, 46, 50, 50];
+export const MONTHLY_TARGETS: number[] = [
+  750, 800, 900, 950, 1000, 1050, 950, 900, 1050, 1150, 1250, 1250,
+];
 
 /** DASH-01's gauge target — the sum of all 12 `MONTHLY_TARGETS` entries. */
 export const ANNUAL_UNIT_TARGET = MONTHLY_TARGETS.reduce((sum, t) => sum + t, 0);
