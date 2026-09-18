@@ -55,16 +55,7 @@ export function TargetVsActualChart({ data }: TargetVsActualChartProps) {
               <Tooltip />
               <Legend />
               <Area
-                type="monotone"
-                dataKey="actual"
-                name="Actual"
-                stroke="var(--chart-gauge-fill)"
-                fill="var(--chart-gauge-fill)"
-                fillOpacity={0.35}
-                strokeWidth={2}
-              />
-              <Area
-                type="monotone"
+                type="linear"
                 dataKey="target"
                 name="Target"
                 stroke="var(--chart-lost-grid)"
@@ -73,6 +64,15 @@ export function TargetVsActualChart({ data }: TargetVsActualChartProps) {
                 strokeWidth={2}
                 strokeDasharray="4 4"
                 dot={false}
+              />
+              <Area
+                type="linear"
+                dataKey="actual"
+                name="Actual"
+                stroke="var(--chart-gauge-fill)"
+                fill="var(--chart-gauge-fill)"
+                fillOpacity={0.35}
+                strokeWidth={2}
               />
             </AreaChart>
           </ResponsiveContainer>
