@@ -22,7 +22,9 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
  * and value text — never a per-owner color — since this is a magnitude
  * comparison of one series, not an identity display (RESEARCH.md
  * anti-pattern). Card/CardContent + title + empty-state shape mirrors
- * `LostBreakdownChart.tsx` exactly.
+ * `LostBreakdownChart.tsx` exactly. Table markup (plain `<table>`, no
+ * @tanstack/react-table — always-expanded, no sort/filter/row-expand)
+ * mirrors `ForecastBreakdownTable.tsx`'s convention.
  */
 export function OwnerLeaderboard({ entries }: OwnerLeaderboardProps) {
   const isEmpty = entries.every((e) => e.wonValue === 0);
@@ -36,25 +38,33 @@ export function OwnerLeaderboard({ entries }: OwnerLeaderboardProps) {
             No Won deals yet — the leaderboard fills in once deals close.
           </p>
         ) : (
-          <div className="flex flex-col gap-2 pt-2">
-            {entries.map((entry, index) => (
-              <div key={entry.owner} className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-background/80 px-2 py-1 text-xs font-medium leading-none text-foreground">
-                    {index + 1}
-                  </span>
-                  <span className="text-sm">{entry.owner}</span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-semibold tabular-nums">
-                    {currencyFormatter.format(entry.wonValue)}
-                  </span>
-                  <span className="text-xs tabular-nums text-muted-foreground">
-                    ({entry.wonCount} {entry.wonCount === 1 ? "contract" : "contracts"})
-                  </span>
-                </div>
-              </div>
-            ))}
+          <div className="mt-2 overflow-x-auto rounded-lg border border-border">
+            <table className="w-full min-w-max text-left text-sm">
+              <thead className="bg-muted/50 text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-2 text-sm font-semibold">Rank</th>
+                  <th className="px-4 py-2 text-sm font-semibold">Owner</th>
+                  <th className="px-4 py-2 text-sm font-semibold">Value</th>
+                  <th className="px-4 py-2 text-sm font-semibold">Contracts</th>
+                </tr>
+              </thead>
+              <tbody>
+                {entries.map((entry, index) => (
+                  <tr key={entry.owner} className="border-t border-border">
+                    <td className="px-4 py-2">
+                      <span className="rounded-full bg-background/80 px-2 py-1 text-xs font-medium leading-none text-foreground">
+                        {index + 1}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2">{entry.owner}</td>
+                    <td className="px-4 py-2 font-semibold tabular-nums">
+                      {currencyFormatter.format(entry.wonValue)}
+                    </td>
+                    <td className="px-4 py-2 tabular-nums">{entry.wonCount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </CardContent>
