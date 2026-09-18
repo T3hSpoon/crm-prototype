@@ -193,9 +193,10 @@ describe("computeOwnerLeaderboard", () => {
     expect(result).toHaveLength(5);
     expect(result.map((e) => e.owner).sort()).toEqual([...OWNER_ROSTER].sort());
     expect(result.every((e) => e.wonValue === 0)).toBe(true);
+    expect(result.every((e) => e.wonCount === 0)).toBe(true);
   });
 
-  it("an owner with zero Won deals still appears with wonValue: 0 (never omitted)", () => {
+  it("an owner with zero Won deals still appears with wonValue: 0 and wonCount: 0 (never omitted)", () => {
     const won = deal({ id: "won-1", outcome: "won", owner: OWNER_ROSTER[0], value: 5000 });
     const result = computeOwnerLeaderboard([won]);
 
@@ -203,9 +204,10 @@ describe("computeOwnerLeaderboard", () => {
     const zeroOwners = result.filter((e) => e.owner !== OWNER_ROSTER[0]);
     expect(zeroOwners).toHaveLength(4);
     expect(zeroOwners.every((e) => e.wonValue === 0)).toBe(true);
+    expect(zeroOwners.every((e) => e.wonCount === 0)).toBe(true);
   });
 
-  it("sums Won-deal value per owner and excludes open/lost deals", () => {
+  it("sums Won-deal value and counts Won deals per owner, excluding open/lost deals", () => {
     const wonA1 = deal({ id: "a1", outcome: "won", owner: OWNER_ROSTER[0], value: 1000 });
     const wonA2 = deal({ id: "a2", outcome: "won", owner: OWNER_ROSTER[0], value: 2000 });
     const openA = deal({ id: "a3", outcome: "open", owner: OWNER_ROSTER[0], value: 9999 });
@@ -214,6 +216,7 @@ describe("computeOwnerLeaderboard", () => {
     const result = computeOwnerLeaderboard([wonA1, wonA2, openA, lostA]);
     const entry = result.find((e) => e.owner === OWNER_ROSTER[0]);
     expect(entry?.wonValue).toBe(3000);
+    expect(entry?.wonCount).toBe(2);
   });
 
   it("is sorted descending by wonValue", () => {

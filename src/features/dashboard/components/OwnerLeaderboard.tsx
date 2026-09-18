@@ -45,9 +45,14 @@ export function OwnerLeaderboard({ entries }: OwnerLeaderboardProps) {
                   </span>
                   <span className="text-sm">{entry.owner}</span>
                 </div>
-                <span className="text-sm font-semibold tabular-nums">
-                  {currencyFormatter.format(entry.wonValue)}
-                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm font-semibold tabular-nums">
+                    {currencyFormatter.format(entry.wonValue)}
+                  </span>
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    ({entry.wonCount} {entry.wonCount === 1 ? "contract" : "contracts"})
+                  </span>
+                </div>
               </div>
             ))}
           </div>

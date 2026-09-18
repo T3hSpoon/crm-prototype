@@ -107,6 +107,7 @@ export function computeMonthlyWonUnits(deals: Deal[], months: number = TRAILING_
  */
 export function computeOwnerLeaderboard(deals: Deal[]) {
   const totals = new Map<string, number>(OWNER_ROSTER.map((owner) => [owner, 0]));
+  const counts = new Map<string, number>(OWNER_ROSTER.map((owner) => [owner, 0]));
 
   for (const d of deals) {
     if (d.outcome !== "won") continue;
@@ -117,10 +118,11 @@ export function computeOwnerLeaderboard(deals: Deal[]) {
     // every consumer/test relies on.
     if (!totals.has(d.owner)) continue;
     totals.set(d.owner, (totals.get(d.owner) ?? 0) + d.value);
+    counts.set(d.owner, (counts.get(d.owner) ?? 0) + 1);
   }
 
   return [...totals.entries()]
-    .map(([owner, wonValue]) => ({ owner, wonValue }))
+    .map(([owner, wonValue]) => ({ owner, wonValue, wonCount: counts.get(owner) ?? 0 }))
     .sort((a, b) => b.wonValue - a.wonValue);
 }
 
