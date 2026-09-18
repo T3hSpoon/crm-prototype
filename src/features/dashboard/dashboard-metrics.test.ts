@@ -8,7 +8,7 @@ import {
   computeConversionFunnel,
   computeClosedByOwnerPerMonth,
 } from "./dashboard-metrics";
-import { OWNER_ROSTER, MONTHLY_UNIT_TARGET } from "@/features/dashboard/dashboard-config";
+import { OWNER_ROSTER, MONTHLY_TARGETS } from "@/features/dashboard/dashboard-config";
 import type { Deal, LineItem } from "@/shared/types/deal";
 
 function lineItem(overrides: Partial<LineItem>): LineItem {
@@ -126,9 +126,12 @@ describe("computeMonthlyWonUnits", () => {
     expect(computeMonthlyWonUnits([])).toHaveLength(12);
   });
 
-  it("pre-seeds every bucket with the configured MONTHLY_UNIT_TARGET", () => {
+  it("pre-seeds each bucket's target from MONTHLY_TARGETS by its calendar month", () => {
     const result = computeMonthlyWonUnits([]);
-    expect(result.every((bucket) => bucket.target === MONTHLY_UNIT_TARGET)).toBe(true);
+    for (const bucket of result) {
+      const monthIndex = Number(bucket.key.slice(5, 7)) - 1;
+      expect(bucket.target).toBe(MONTHLY_TARGETS[monthIndex]);
+    }
   });
 
   it("buckets a Won deal's line-item units into its contractSignedDate month, leaving other months at explicit 0 (never omitted)", () => {
