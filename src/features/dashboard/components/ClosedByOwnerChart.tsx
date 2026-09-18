@@ -56,10 +56,10 @@ export function ClosedByOwnerChart({ data, owners, hasClosedDeals }: ClosedByOwn
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-lost-grid)" />
-              <XAxis dataKey="month" tick={{ fill: "#898781", fontSize: 12 }} />
+              <XAxis dataKey="month" tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
               <YAxis
                 allowDecimals={false}
-                tick={{ fill: "#898781", fontSize: 12 }}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
                 tickFormatter={(value) => compactCurrencyFormatter.format(Number(value))}
               />
               <Tooltip formatter={(value) => currencyFormatter.format(Number(value))} />

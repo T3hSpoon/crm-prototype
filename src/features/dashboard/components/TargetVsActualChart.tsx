@@ -40,15 +40,15 @@ export function TargetVsActualChart({ data }: TargetVsActualChartProps) {
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-lost-grid)" />
-              <XAxis dataKey="month" tick={{ fill: "#898781", fontSize: 12 }} />
+              <XAxis dataKey="month" tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
               <YAxis
                 allowDecimals={false}
-                tick={{ fill: "#898781", fontSize: 12 }}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
                 label={{
                   value: "Units",
                   angle: -90,
                   position: "insideLeft",
-                  fill: "#898781",
+                  fill: "var(--muted-foreground)",
                   fontSize: 12,
                 }}
               />

@@ -24,7 +24,7 @@ function TruncatedTick(props: { x?: number; y?: number; payload?: { value: strin
   const truncated =
     label.length > TICK_TRUNCATE_LENGTH ? `${label.slice(0, TICK_TRUNCATE_LENGTH)}…` : label;
   return (
-    <text x={x} y={(y ?? 0) + 12} textAnchor="middle" fill="#898781" fontSize={12}>
+    <text x={x} y={(y ?? 0) + 12} textAnchor="middle" fill="var(--muted-foreground)" fontSize={12}>
       {truncated}
     </text>
   );
@@ -56,8 +56,8 @@ export function LostBreakdownChart({ title, counts }: LostBreakdownChartProps) {
               <XAxis dataKey="name" tick={<TruncatedTick />} />
               <YAxis
                 allowDecimals={false}
-                tick={{ fill: "#898781", fontSize: 12 }}
-                label={{ value: "Number of Lost Deals", angle: -90, position: "insideLeft", fill: "#898781", fontSize: 12 }}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                label={{ value: "Number of Lost Deals", angle: -90, position: "insideLeft", fill: "var(--muted-foreground)", fontSize: 12 }}
               />
               <Tooltip />
               <Bar dataKey="count" fill="var(--chart-lost-bar)" radius={[4, 4, 0, 0]} />
