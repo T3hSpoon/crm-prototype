@@ -98,53 +98,58 @@
     --sidebar-ring: oklch(0.708 0 0);
 }
 
+/*
+ * Dark theme, restyled after a real Idrive AI ("Nexus") dashboard reference:
+ * deep navy background/panels, a teal brand accent, coral/red for
+ * alerts/negative values, amber for warnings/mid-range values.
+ */
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
+    --background: #0e1421;
+    --foreground: #f2f5fa;
+    --card: #161d2c;
+    --card-foreground: #f2f5fa;
+    --popover: #161d2c;
+    --popover-foreground: #f2f5fa;
+    --primary: #17b8ac;
+    --primary-foreground: #0e1421;
+    --secondary: #1c2436;
+    --secondary-foreground: #f2f5fa;
+    --muted: #1c2436;
+    --muted-foreground: #8b93a7;
+    --accent: #1c2436;
+    --accent-foreground: #f2f5fa;
+    --destructive: #ef4b62;
+    --border: #232b3d;
+    --input: #232b3d;
+    --ring: #17b8ac;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
-    --chart-lost-bar: #3987e5;
-    --chart-lost-grid: #2c2c2a;
-    --chart-gauge-fill: #3987e5;
-    --chart-gauge-track: #184f95;
-    --chart-target: #a8a6a0;
-    --chart-owner-1: #3987e5;
-    --chart-owner-2: #d95926;
-    --chart-owner-3: #199e70;
-    --chart-owner-4: #c98500;
-    --chart-owner-5: #d55181;
-    --chart-funnel-1: #9ec5f4;
-    --chart-funnel-2: #6da7ec;
-    --chart-funnel-3: #3987e5;
-    --chart-funnel-4: #256abf;
-    --chart-funnel-5: #184f95;
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --chart-lost-bar: #ef4b62;
+    --chart-lost-grid: #2a3346;
+    --chart-gauge-fill: #f0a94e;
+    --chart-gauge-track: #2a3346;
+    --chart-target: #94a1b8;
+    --chart-owner-1: #17b8ac;
+    --chart-owner-2: #f0a94e;
+    --chart-owner-3: #ef4b62;
+    --chart-owner-4: #5b8def;
+    --chart-owner-5: #e8467a;
+    --chart-funnel-1: #5eead4;
+    --chart-funnel-2: #2dd4bf;
+    --chart-funnel-3: #17b8ac;
+    --chart-funnel-4: #0d9488;
+    --chart-funnel-5: #0f766e;
+    --sidebar: #0c1119;
+    --sidebar-foreground: #f2f5fa;
+    --sidebar-primary: #17b8ac;
+    --sidebar-primary-foreground: #0e1421;
+    --sidebar-accent: #1c2436;
+    --sidebar-accent-foreground: #f2f5fa;
+    --sidebar-border: #232b3d;
+    --sidebar-ring: #17b8ac;
 }
 
 @layer base {
