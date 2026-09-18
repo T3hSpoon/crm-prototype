@@ -41,6 +41,11 @@ interface StageSelectProps {
  */
 export function StageSelect({ dealId, currentGroup }: StageSelectProps) {
   const [pendingGroup, setPendingGroup] = useState<"lost" | "won" | null>(null);
+  // A signed Contract (Won) is a closed-won record — it can still be listed
+  // as Prospect/Lead/Opportunity/Deal via a reversal, but never moved
+  // straight to Lost. Every other stage keeps the full option list.
+  const groupOptions =
+    currentGroup === "won" ? GROUP_OPTIONS.filter((o) => o.value !== "lost") : GROUP_OPTIONS;
 
   const handleValueChange = (group: PipelineGroup) => {
     if (group === "lost") {
@@ -75,7 +80,7 @@ export function StageSelect({ dealId, currentGroup }: StageSelectProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {GROUP_OPTIONS.map((option) => (
+                {groupOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
