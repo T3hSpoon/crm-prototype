@@ -37,6 +37,14 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 });
 
 const columns = [
+  columnHelper.display({
+    id: "id",
+    header: "ID",
+    enableGlobalFilter: false,
+    cell: (info) => (
+      <span className="text-xs font-mono text-muted-foreground">{info.row.original.id}</span>
+    ),
+  }),
   columnHelper.accessor("name", {
     header: "Name",
     enableGlobalFilter: true,
@@ -118,14 +126,6 @@ const columns = [
     enableGlobalFilter: false,
     cell: (info) => (
       <StageSelect dealId={info.row.original.id} currentGroup={toPipelineGroup(info.row.original)} />
-    ),
-  }),
-  columnHelper.display({
-    id: "id",
-    header: "ID",
-    enableGlobalFilter: false,
-    cell: (info) => (
-      <span className="text-xs font-mono text-muted-foreground">{info.row.original.id}</span>
     ),
   }),
 ];
