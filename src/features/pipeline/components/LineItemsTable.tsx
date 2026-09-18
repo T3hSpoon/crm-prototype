@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RotateCcw } from "lucide-react";
@@ -43,6 +43,10 @@ interface LineItemsTableProps {
    * (DEAL-05). While overridden, line-item commits never silently rewrite
    * `value` — only the drawer's explicit reset-to-sum affordance does. */
   overridden: boolean;
+  /** The full deal — used only by the Document Actions section below (quick
+   * task 260918-fis). Existing lineItems/value/overridden prop reads are
+   * untouched. */
+  deal: Deal;
 }
 
 /**
@@ -57,13 +61,18 @@ interface LineItemsTableProps {
  * so an in-progress manual edit to Value cannot be raced or clobbered by a
  * separate auto-tracking write.
  */
-export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTableProps) {
+export function LineItemsTable({ dealId, lineItems, overridden, deal }: LineItemsTableProps) {
   // One flag for the whole table — commitLineItems() always patches the
   // entire array in a single call, so there is no meaningful per-row
   // in-flight state (Pitfall 5 double-submit guard, carried forward from
   // 02-01's EditableCell/DealDetailDrawer pattern).
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Independent pending/error state for the Document Actions section below —
+  // separate from the line-item isPending/error above so an in-flight
+  // document generation never disables line-item editing or vice versa.
+  const [isDocPending, setIsDocPending] = useState(false);
+  const [docError, setDocError] = useState<string | null>(null);
   // Never stored — always freshly derived every render (DEAL-05), mirroring
   // the removed drawer's own computation. Uses the last-committed `lineItems`
   // prop, not the form's live in-progress draft.
@@ -138,6 +147,36 @@ export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTable
   const handleResetToSum = () => {
     if (isPending) return;
     void usePipelineStore.getState().updateDeal(dealId, { value: computed });
+  };
+
+  const handleGenerate = async (kind: "quote" | "agreement") => {
+    if (isDocPending) return;
+    setIsDocPending(true);
+    try {
+      await usePipelineStore.getState().generateDocument(dealId, kind);
+      setDocError(null);
+    } catch {
+      setDocError(UPDATE_FAILED_MESSAGE);
+    } finally {
+      setIsDocPending(false);
+    }
+  };
+
+  const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    // Reset immediately so re-selecting the same filename later still fires
+    // onChange.
+    e.target.value = "";
+    if (!file || isDocPending) return;
+    setIsDocPending(true);
+    try {
+      await usePipelineStore.getState().uploadDocument(dealId, file);
+      setDocError(null);
+    } catch {
+      setDocError(UPDATE_FAILED_MESSAGE);
+    } finally {
+      setIsDocPending(false);
+    }
   };
 
   return (
@@ -345,6 +384,44 @@ export function LineItemsTable({ dealId, lineItems, overridden }: LineItemsTable
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}
+        </p>
+      )}
+      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={isDocPending}
+          onClick={() => void handleGenerate("quote")}
+        >
+          Generate Quote
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={isDocPending}
+          onClick={() => void handleGenerate("agreement")}
+        >
+          Generate Agreement
+        </Button>
+        <Input
+          type="file"
+          accept="application/pdf"
+          disabled={isDocPending}
+          className="max-w-48"
+          onChange={(e) => void handleUpload(e)}
+          aria-label="Upload PDF"
+        />
+        {deal.documents.length > 0 && (
+          <span className="text-xs text-muted-foreground">
+            {deal.documents.length} document{deal.documents.length === 1 ? "" : "s"}
+          </span>
+        )}
+      </div>
+      {docError && (
+        <p role="alert" className="text-sm text-destructive">
+          {docError}
         </p>
       )}
     </div>
