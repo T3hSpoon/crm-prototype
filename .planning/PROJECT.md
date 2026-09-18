@@ -6,9 +6,18 @@
 
 The full pipeline lifecycle works end-to-end on mock data: prospects flow through Prospect → Lead → Opportunity → Deal, deals carry full line-item detail and captured contract terms, lost deals require a reason and land in a distinct group, won deals roll up as the contracts-made list, and a Forecast page turns all of that into pipeline value/win-rate/loss-reason analysis plus a confidence-grouped financial breakdown across the entire pipeline (open, won, and lost). Confidence level is now editable inline from the pipeline table, same click-to-edit pattern as owner/value/close date. Live demo: https://eld-dusky.vercel.app
 
-## Next Milestone Goals
+## Current Milestone: v1.2 Sales Dashboard
 
-Not yet defined — run `/gsd-new-milestone` to scope the next version. Candidates already flagged in REQUIREMENTS.md's v2 list and PROJECT.md decisions: real API/database persistence (replacing the mock repository), authentication/multi-user pipelines, stalled-deal flagging (ANLY-01), and the eventual merge into the existing iDrive project. Also worth considering: widening test coverage beyond Phase 5's unit-only scope (no component/interaction/e2e tests yet), and the small set of non-blocking review warnings accumulated across phases (see STATE.md Blockers/Concerns).
+**Goal:** Add a new Dashboard page (alongside Pipeline and Forecast) giving a sales-management view of the pipeline — targets, leaderboard, conversion funnel, and closed-deal breakdown — inspired by a monday.com sales dashboard reference but adapted to our existing data model.
+
+**Target features:**
+- Unit Sales Target gauge — actual vs. target units, where "units" = summed line-item quantities across Won deals; target is a seeded mock value
+- Target vs. Actual Sales chart — time series of Won-deal unit volume against the target, plotted by close date, over the full closed-deal history
+- Leaderboard — owners ranked by total Won deal value
+- Conversion Rate funnel — full pipeline: Prospect → Lead → Opportunity → Deal → Won, with per-stage conversion %
+- Stacked bar of deals closed — one bar per time period, segmented by owner
+
+Deferred candidates not in this milestone (still flagged in REQUIREMENTS.md's v2 list and PROJECT.md decisions): real API/database persistence (replacing the mock repository), authentication/multi-user pipelines, stalled-deal flagging (ANLY-01), and the eventual merge into the existing iDrive project. Also worth considering: widening test coverage beyond Phase 5's unit-only scope (no component/interaction/e2e tests yet), and the small set of non-blocking review warnings accumulated across phases (see STATE.md Blockers/Concerns).
 
 ## What This Is
 
@@ -35,10 +44,15 @@ A working, demoable pipeline view — prospects flow through stages, lost deals 
 - ✓ All data is mock/seed data held in app state — no persistence layer yet — confirmed holding through Phase 4, no backend introduced
 - ✓ User can edit a deal's confidence level inline from the pipeline table (not just at creation via the Add Deal wizard) — Phase 5
 - ✓ Forecast page shows a table of all deals (open, won, and lost) grouped by confidence level, with per-deal Model/Services/Quantity/ARPU/MRR/ARR/Lifetime Contract Value/Contract Length columns and per-group + grand-total subtotal rows — Phase 5
+- ✓ Unit Sales Target gauge — actual vs. target units (line-item quantities) on the new Dashboard page — Phase 6
+- ✓ Target vs. Actual Sales chart — Won-deal unit volume over time vs. seeded target — Phase 6
+- ✓ Leaderboard — owners ranked by total Won deal value — Phase 6
+- ✓ Conversion Rate funnel — Prospect → Lead → Opportunity → Deal → Won stage-by-stage % — Phase 6
+- ✓ Stacked bar of deals closed — per-period bars segmented by owner — Phase 6
 
 ### Active
 
-Not yet defined — scope the next milestone with `/gsd-new-milestone`.
+None — all v1.2 requirements shipped in Phase 6.
 
 ### Out of Scope
 
@@ -53,7 +67,7 @@ Not yet defined — scope the next milestone with `/gsd-new-milestone`.
 - Reference screenshot: monday.com's "Deals" board (IdriveAI CRM workspace) — grouped table with colored status groups, subitems for inventory line items (SKU, units, price, product/service type), and a Nexus integration status column. Used for concept inspiration only, not a visual target.
 - The user has an existing iDrive project this CRM is ultimately meant to integrate into (adding real API/database wiring). That project's code is not yet present in this repository — integration is explicitly future work, not part of this milestone.
 - React was chosen as the stack partly to align with the likely stack of that existing project, reducing future rework when integration happens.
-- Current codebase: ~4,700 LOC TypeScript/TSX (Vite 8 + React 19.2 + TypeScript 5.9.3 + Zustand + TanStack Table + Tailwind v4 + shadcn/ui). Vitest was added in Phase 5 as the project's first test framework (unit tests only, covering pure derived-value functions — no component/interaction/e2e tests yet).
+- Current codebase: ~5,800 LOC TypeScript/TSX (Vite 8 + React 19.2 + TypeScript 5.9.3 + Zustand + TanStack Table + Recharts + Tailwind v4 + shadcn/ui). Vitest was added in Phase 5 as the project's first test framework (unit tests only, covering pure derived-value functions — no component/interaction/e2e tests yet); 40 unit tests pass as of Phase 6 (dashboard-metrics.ts + seed-data.ts invariants added on top of Phase 5's deal-metrics/forecast-breakdown coverage). Recharts adopted in Phase 6 for the Dashboard page's gauge/chart/funnel widgets.
 - A small set of non-blocking review warnings has accumulated across phases (repository patch-type drift not covering `confidenceLevel`, missing double-submit guards, no exhaustiveness guard on confidence grouping, etc.) — see STATE.md Blockers/Concerns for the full list; none block current functionality but are worth sweeping before a real-backend integration phase.
 
 ## Constraints
@@ -90,6 +104,11 @@ Not yet defined — scope the next milestone with `/gsd-new-milestone`.
 | Forecast table's "Model" column reuses `LineItem.sku` | No new field added to `LineItem` for this milestone; `sku` already carries the model-identifier role the reference screenshot's Camera/GPS Model columns implied | Shipped Phase 5 — `joinModelSkus` comma-joins all line-item skus, em-dash fallback when blank |
 | Confidence-grouped forecast table includes all deals regardless of outcome (open/won/lost) | User wants full visibility across the pipeline, not just still-open deals — differs from the existing weighted-pipeline-value calculation's open-only scope | Shipped Phase 5 — `groupDealsByConfidence` reads the full unfiltered `deals` selector, no outcome filter |
 | Vitest adopted as the project's first test framework | Milestone v1.1's forecast-breakdown/confidence-grouping logic is pure-function business logic well-suited to unit testing; no test framework existed before this phase | Shipped Phase 5 — `vitest.config.ts`, 7 unit tests across `deal-metrics.test.ts`/`forecast-breakdown.test.ts`; no component/interaction/e2e tests yet |
+| Phase 6 built as one tracer-slice plan (seed-data foundation + first widget, DASH-01) followed by two 2-widget expansion plans | Coarse-granularity phase with 5 additive, independently-testable widgets sharing one new derived-data module; tracer-first proves the seed→metrics→chart→page stack end-to-end before committing to the remaining 4 widgets' shape | Shipped Phase 6 — 06-01 (seed + gauge), 06-02 (target-vs-actual chart + leaderboard), 06-03 (conversion funnel + closed-by-owner chart); `dashboard-config.ts`/`dashboard-metrics.ts`/chart-color CSS tokens established in 06-01, reused unchanged by 06-02/06-03 |
+| Fixed 5-name `OWNER_ROSTER` replaces `faker.person.fullName()` for deal ownership | Dashboard-01/03/05 all need a small, stable, groupable owner set (leaderboard rows, funnel/chart legends) that a random-name generator can't provide | Shipped Phase 6 — deterministic `faker.seed(20260917)`, 150-deal seed set, all owners drawn from the fixed roster |
+| `computeOwnerLeaderboard`/`computeClosedByOwnerPerMonth` defensively skip any deal whose `owner` isn't in the fixed roster, rather than locking owner entry to a `<Select>` | Code review (06-REVIEW.md CR-02) found `AddDealDialog`/`EditableCell` still allow free-text owner names elsewhere in the app — narrower, lower-risk fix than closing off owner entry everywhere | Shipped Phase 6 (fix commit `121ae73`) — flagged as an open follow-up: if "owner" should be a truly closed set, `AddDealDialog.tsx`/`EditableCell.tsx`/`pipelineStore.ts` still need that constraint |
+| Recharts `RadialBarChart` gauge requires an explicit `PolarAngleAxis domain={[0, 100]}` | With a single data point and no explicit domain, Recharts silently falls back to `[0, dataMax]`, making the gauge always render 100% full regardless of actual value — caught by code review, not by any execution-time test | Shipped Phase 6 (fix commit `c3546c7`) — a reusable pitfall for any future single-value Recharts gauge in this codebase |
+| Conversion Rate funnel is a current-state snapshot (all Won deals count at every stage), not a true historical stage-to-stage conversion rate | The codebase has no stage-history/audit-trail data model to compute a real historical funnel; disclosed via an unconditionally-rendered caption rather than silently mislabeling the metric | Shipped Phase 6 — `computeConversionFunnel` + `ConversionFunnelChart`'s always-visible disclosure caption |
 
 ## Evolution
 
@@ -109,4 +128,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-09-16 after v1.1 milestone*
+*Last updated: 2026-09-18 after Phase 6*
