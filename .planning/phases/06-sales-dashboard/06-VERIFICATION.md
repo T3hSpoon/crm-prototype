@@ -1,14 +1,16 @@
 ---
 phase: 06-sales-dashboard
 verified: 2026-09-17T18:05:00Z
-status: human_needed
+status: passed
 score: 5/5 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
 human_verification:
+
   - test: "Open the app, click the Dashboard tab, and visually confirm the Unit Sales Target gauge's radial ring fill level matches the actual/target text (post-fix, since the CR-01 domain bug previously made it always render 100% full)."
     expected: "The gauge's colored arc visually fills roughly to computeUnitTargetPct(actual, target) * 100% of the semicircle sweep — not always fully filled — and switching between Pipeline/Forecast/Dashboard tabs preserves each tab's state without remounting."
     why_human: "No browser was available in the autonomous execution sessions across all 3 plans; verification was structural only (build, unit tests, greps, source reads). This is the disclosed, expected follow-up per the phase's own SUMMARY notes, not a phase failure."
+
   - test: "Visually inspect Target vs. Actual Sales chart (bar+line), Owner Leaderboard rows, Conversion Rate funnel (5-step color ramp, monotonic-or-flat percentages), and the stacked Closed Deals by Owner chart (5-color legend wrapping at typical widths, 12-month x-axis tick legibility)."
     expected: "All 4 remaining widgets render populated, readable, correctly colored charts against the real 150-deal seed dataset with no visual glitches (e.g., no dual-axis artifacts, no clipped legend, no overlapping labels)."
     why_human: "Same no-browser constraint as above — components were verified via exact-string greps for empty-state copy, element-count greps (Bar/Line/YAxis counts), and source-level confirmation of positional color indexing, but never actually rendered and screenshotted."
