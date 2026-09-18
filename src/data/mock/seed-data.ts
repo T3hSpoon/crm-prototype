@@ -14,7 +14,6 @@ import { sumLineItems } from "@/shared/utils/line-items";
 import { OWNER_ROSTER, TRAILING_MONTHS } from "@/features/dashboard/dashboard-config";
 
 const STAGES: PipelineStage[] = ["prospect", "lead", "opportunity", "deal"];
-const LINE_ITEM_TYPES: LineItemType[] = ["product", "service"];
 const FREQUENCIES: DealFrequency[] = ["monthly", "quarterly", "quadrimestral", "semi-annual", "annually"];
 const CURRENCIES: DealCurrency[] = ["USD", "EUR", "GBP"];
 const CUSTOMER_TYPES: CustomerType[] = ["government", "private-utility", "private-fleet", "similar"];
@@ -29,7 +28,13 @@ export const SEED_DEAL_COUNT = 150;
 // of a flaky probabilistic spot-check.
 faker.seed(20260917);
 
-function buildSeedLineItem(type: LineItemType = faker.helpers.arrayElement(LINE_ITEM_TYPES)): LineItem {
+/** Realistic per-type unit-price bands — hardware units run $250-350, monthly per-unit service fees run $15-25. */
+const PRICE_RANGE: Record<LineItemType, { min: number; max: number }> = {
+  product: { min: 250, max: 350 },
+  service: { min: 15, max: 25 },
+};
+
+function buildSeedLineItem(type: LineItemType): LineItem {
   return {
     // Never a sequential counter or array index (research/PITFALLS.md
     // Pitfall 1/5) — same id convention as Deal.id.
@@ -37,7 +42,7 @@ function buildSeedLineItem(type: LineItemType = faker.helpers.arrayElement(LINE_
     productOrService: faker.commerce.productName(),
     sku: faker.string.alphanumeric(8).toUpperCase(),
     units: faker.number.int({ min: 1, max: 20 }),
-    unitPrice: faker.number.int({ min: 50, max: 5_000 }),
+    unitPrice: faker.number.int(PRICE_RANGE[type]),
     type,
   };
 }
@@ -51,29 +56,27 @@ function buildSeedDeal(): Deal {
   const isWon = !isLost && faker.datatype.boolean({ probability: 0.15 });
   const contractTermMonths = faker.number.int({ min: 0, max: 60 });
 
-  // 0-4 line items per deal (DEAL-04/DEAL-05 seed data). When non-empty, the
-  // deal's value is set to the computed sum so seeded deals start in the
-  // auto-tracked (non-overridden) state; an empty array leaves the existing
-  // independent random value generation below unchanged.
+  // Every deal (DEAL-04/DEAL-05 seed data) gets one `product` "units" line
+  // item priced $250-350 (hardware) and at least one `service` line item
+  // priced $15-25/mo (per-unit service fee) — a realistic hardware+service
+  // bundle. The deal's value is set to the computed sum so seeded deals
+  // start in the auto-tracked (non-overridden) state.
   //
-  // Won deals are special-cased to guarantee at least 2 distinct `service`
-  // line items (different SKU/unitPrice each) plus 0-2 additional random
-  // items — a real contract commonly bundles more than one billed service
-  // (e.g. one unit type at $X/mo, another at $Y/mo), and DASH-03's
-  // owner-level ARPU is a quantity-weighted average across exactly this
-  // kind of mixed-rate line-item set. Without this, ARPU still computes
-  // correctly for any deal that happens to have 2+ services, but nothing
-  // in the seed data reliably demonstrated the blending.
-  const lineItemCount = faker.number.int({ min: 0, max: 4 });
+  // Won deals get 2 distinct `service` line items (different SKU/unitPrice
+  // each, both still in the $15-25 band) instead of 1 — a real contract
+  // commonly bundles more than one billed service (e.g. one unit type at
+  // $X/mo, another at $Y/mo), and DASH-03's owner-level ARPU is a
+  // quantity-weighted average across exactly this kind of mixed-rate
+  // line-item set. Without 2+ services, ARPU still computes correctly for
+  // any deal that happens to have them, but nothing in the seed data
+  // reliably demonstrated the blending.
   const lineItems: LineItem[] = isWon
     ? [
+        buildSeedLineItem("product"),
         buildSeedLineItem("service"),
         buildSeedLineItem("service"),
-        ...Array.from({ length: faker.number.int({ min: 0, max: 2 }) }, () => buildSeedLineItem()),
       ]
-    : lineItemCount === 0
-      ? []
-      : Array.from({ length: lineItemCount }, () => buildSeedLineItem());
+    : [buildSeedLineItem("product"), buildSeedLineItem("service")];
 
   return {
     id: faker.string.numeric(10),
