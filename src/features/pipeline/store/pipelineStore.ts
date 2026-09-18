@@ -69,8 +69,8 @@ export const usePipelineStore = create<PipelineState>()((set, get) => ({
       // Replace by id, never by array index (research/PITFALLS.md Pitfall 5).
       set({ deals: get().deals.map((d) => (d.id === dealId ? updated : d)) });
     } catch (err) {
-      // Mirrors updateDeal's log+rethrow pattern — LostReasonPopover's catch
-      // block shows the inline error copy and keeps the popover open with
+      // Mirrors updateDeal's log+rethrow pattern — LostReasonDialog's catch
+      // block shows the inline error copy and keeps the dialog open with
       // the user's selections intact (Task 2, UI-SPEC error-state contract).
       console.error("moveToLost failed", err);
       throw err;

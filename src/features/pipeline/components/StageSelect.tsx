@@ -6,8 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
-import { LostReasonPopover } from "@/features/pipeline/components/LostReasonPopover";
+import { LostReasonDialog } from "@/features/pipeline/components/LostReasonDialog";
 import { WonContractTermsDialog } from "@/features/pipeline/components/WonContractTermsDialog";
 import { usePipelineStore } from "@/features/pipeline/store/pipelineStore";
 import type { PipelineGroup } from "@/shared/types/deal";
@@ -64,37 +63,21 @@ export function StageSelect({ dealId, currentGroup }: StageSelectProps) {
     // does not stop propagation itself, and the row now opens the detail
     // drawer on click.
     <div onClick={(e) => e.stopPropagation()}>
-      <Popover
-        open={pendingGroup === "lost"}
-        onOpenChange={(open) => {
-          // Escape/click-away dismissal (D-04) — clears local state only,
-          // never calls a store action. `Select`'s value stays bound to
-          // currentGroup, so it reverts automatically.
-          if (!open) setPendingGroup(null);
-        }}
-      >
-        <PopoverAnchor asChild>
-          <div>
-            <Select value={currentGroup} onValueChange={handleValueChange}>
-              <SelectTrigger size="sm" aria-label="Move deal to stage">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {groupOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </PopoverAnchor>
-        <PopoverContent>
-          {pendingGroup === "lost" && (
-            <LostReasonPopover dealId={dealId} onClose={() => setPendingGroup(null)} />
-          )}
-        </PopoverContent>
-      </Popover>
+      <Select value={currentGroup} onValueChange={handleValueChange}>
+        <SelectTrigger size="sm" aria-label="Move deal to stage">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {groupOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {pendingGroup === "lost" && (
+        <LostReasonDialog dealId={dealId} open onOpenChange={() => setPendingGroup(null)} />
+      )}
       {pendingGroup === "won" && (
         <WonContractTermsDialog dealId={dealId} open onOpenChange={() => setPendingGroup(null)} />
       )}
