@@ -16,6 +16,14 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
+/** ARPU is a per-unit average, not a lump sum — keep 2 decimal places instead of rounding to a whole dollar. */
+const arpuFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 /**
  * Owner Leaderboard (DASH-03) — up to 5 fixed-roster rows ranked by total
  * Won-deal value, descending. All rows use a single hue for the rank badge
@@ -65,7 +73,7 @@ export function OwnerLeaderboard({ entries }: OwnerLeaderboardProps) {
                     <td className="px-4 py-2 tabular-nums">{entry.wonCount}</td>
                     <td className="px-4 py-2 tabular-nums">{currencyFormatter.format(entry.ltv)}</td>
                     <td className="px-4 py-2 tabular-nums">
-                      {entry.arpu === null ? "—" : currencyFormatter.format(entry.arpu)}
+                      {entry.arpu === null ? "—" : arpuFormatter.format(entry.arpu)}
                     </td>
                   </tr>
                 ))}

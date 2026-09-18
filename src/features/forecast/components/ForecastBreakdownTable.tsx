@@ -18,6 +18,14 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
+/** ARPU is a per-unit average, not a lump sum — keep 2 decimal places instead of rounding to a whole dollar. */
+const arpuFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 interface ForecastBreakdownTableProps {
   deals: Deal[];
 }
@@ -79,7 +87,7 @@ export function ForecastBreakdownTable({ deals }: ForecastBreakdownTableProps) {
                       <td className="px-4 py-2">
                         {computeArpu(deal) === null
                           ? "—"
-                          : currencyFormatter.format(computeArpu(deal) as number)}
+                          : arpuFormatter.format(computeArpu(deal) as number)}
                       </td>
                       <td className="px-4 py-2">{currencyFormatter.format(computeMrr(deal))}</td>
                       <td className="px-4 py-2">{currencyFormatter.format(computeArr(deal))}</td>
@@ -98,7 +106,7 @@ export function ForecastBreakdownTable({ deals }: ForecastBreakdownTableProps) {
                   <td className="px-4 py-2">—</td>
                   <td className="px-4 py-2">{totals.quantity}</td>
                   <td className="px-4 py-2">
-                    {totals.arpu === null ? "—" : currencyFormatter.format(totals.arpu)}
+                    {totals.arpu === null ? "—" : arpuFormatter.format(totals.arpu)}
                   </td>
                   <td className="px-4 py-2">{currencyFormatter.format(totals.mrr)}</td>
                   <td className="px-4 py-2">{currencyFormatter.format(totals.arr)}</td>
@@ -119,7 +127,7 @@ export function ForecastBreakdownTable({ deals }: ForecastBreakdownTableProps) {
                 <td className="px-4 py-2">—</td>
                 <td className="px-4 py-2">{grandTotals.quantity}</td>
                 <td className="px-4 py-2">
-                  {grandTotals.arpu === null ? "—" : currencyFormatter.format(grandTotals.arpu)}
+                  {grandTotals.arpu === null ? "—" : arpuFormatter.format(grandTotals.arpu)}
                 </td>
                 <td className="px-4 py-2">{currencyFormatter.format(grandTotals.mrr)}</td>
                 <td className="px-4 py-2">{currencyFormatter.format(grandTotals.arr)}</td>
