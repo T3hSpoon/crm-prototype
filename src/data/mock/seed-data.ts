@@ -29,7 +29,7 @@ export const SEED_DEAL_COUNT = 150;
 // of a flaky probabilistic spot-check.
 faker.seed(20260917);
 
-function buildSeedLineItem(): LineItem {
+function buildSeedLineItem(type: LineItemType = faker.helpers.arrayElement(LINE_ITEM_TYPES)): LineItem {
   return {
     // Never a sequential counter or array index (research/PITFALLS.md
     // Pitfall 1/5) — same id convention as Deal.id.
@@ -38,7 +38,7 @@ function buildSeedLineItem(): LineItem {
     sku: faker.string.alphanumeric(8).toUpperCase(),
     units: faker.number.int({ min: 1, max: 20 }),
     unitPrice: faker.number.int({ min: 50, max: 5_000 }),
-    type: faker.helpers.arrayElement(LINE_ITEM_TYPES),
+    type,
   };
 }
 
@@ -55,11 +55,25 @@ function buildSeedDeal(): Deal {
   // deal's value is set to the computed sum so seeded deals start in the
   // auto-tracked (non-overridden) state; an empty array leaves the existing
   // independent random value generation below unchanged.
+  //
+  // Won deals are special-cased to guarantee at least 2 distinct `service`
+  // line items (different SKU/unitPrice each) plus 0-2 additional random
+  // items — a real contract commonly bundles more than one billed service
+  // (e.g. one unit type at $X/mo, another at $Y/mo), and DASH-03's
+  // owner-level ARPU is a quantity-weighted average across exactly this
+  // kind of mixed-rate line-item set. Without this, ARPU still computes
+  // correctly for any deal that happens to have 2+ services, but nothing
+  // in the seed data reliably demonstrated the blending.
   const lineItemCount = faker.number.int({ min: 0, max: 4 });
-  const lineItems: LineItem[] =
-    lineItemCount === 0
+  const lineItems: LineItem[] = isWon
+    ? [
+        buildSeedLineItem("service"),
+        buildSeedLineItem("service"),
+        ...Array.from({ length: faker.number.int({ min: 0, max: 2 }) }, () => buildSeedLineItem()),
+      ]
+    : lineItemCount === 0
       ? []
-      : Array.from({ length: lineItemCount }, buildSeedLineItem);
+      : Array.from({ length: lineItemCount }, () => buildSeedLineItem());
 
   return {
     id: faker.string.numeric(10),

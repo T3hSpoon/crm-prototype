@@ -30,6 +30,15 @@ describe("seedDeals", () => {
     }
   });
 
+  it("every Won deal has at least 2 'service' line items, so DASH-03's owner-level ARPU always has a real multi-rate set to weight-average over", () => {
+    const wonDeals = seedDeals.filter((d) => d.outcome === "won");
+    expect(wonDeals.length).toBeGreaterThan(0);
+    for (const deal of wonDeals) {
+      const serviceCount = deal.lineItems.filter((li) => li.type === "service").length;
+      expect(serviceCount).toBeGreaterThanOrEqual(2);
+    }
+  });
+
   it("every lost deal's closeDate falls within the trailing 12 months up to now (D-05/D-06 backdating)", () => {
     const now = new Date();
     const windowStart = subMonths(now, TRAILING_MONTHS);
