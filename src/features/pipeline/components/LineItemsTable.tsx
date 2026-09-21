@@ -78,6 +78,10 @@ export function LineItemsTable({ dealId, lineItems, overridden, deal }: LineItem
   // 260921-e8z) — mirrors StageSelect.tsx's pendingGroup-gated
   // LostReasonDialog/WonContractTermsDialog conditional-mount pattern.
   const [dealTermsOpen, setDealTermsOpen] = useState(false);
+  // True while a row has been added/removed locally but not yet committed —
+  // Add/Remove no longer auto-commit (unlike per-field blur-commits below),
+  // so a "Save" button surfaces to persist the structural change explicitly.
+  const [hasPendingStructuralChange, setHasPendingStructuralChange] = useState(false);
   // Never stored — always freshly derived every render (DEAL-05), mirroring
   // the removed drawer's own computation. Uses the last-committed `lineItems`
   // prop, not the form's live in-progress draft.
@@ -125,11 +129,13 @@ export function LineItemsTable({ dealId, lineItems, overridden, deal }: LineItem
       }
       await usePipelineStore.getState().updateDeal(dealId, patch);
       setError(null);
+      setHasPendingStructuralChange(false);
     } catch {
       // Revert every row to the deal's last-known-good line items (passed in
       // via the `lineItems` prop) without closing the drawer.
       form.reset({ lineItems });
       setError(UPDATE_FAILED_MESSAGE);
+      setHasPendingStructuralChange(false);
     } finally {
       setIsPending(false);
     }
@@ -145,13 +151,17 @@ export function LineItemsTable({ dealId, lineItems, overridden, deal }: LineItem
       unitPrice: 0,
       type: "product",
     });
-    void commitLineItems();
+    // No longer auto-commits — the new row starts blank, and committing it
+    // immediately would save an empty product/service line before the user
+    // has a chance to fill it in. A "Save" button surfaces instead.
+    setHasPendingStructuralChange(true);
   };
 
   const handleRemove = (index: number) => {
     if (isPending) return;
     remove(index);
-    void commitLineItems();
+    // No longer auto-commits — see handleAdd's comment.
+    setHasPendingStructuralChange(true);
   };
 
   const handleResetToSum = () => {
@@ -386,6 +396,17 @@ export function LineItemsTable({ dealId, lineItems, overridden, deal }: LineItem
           <Button type="button" variant="outline" size="sm" disabled={isPending} onClick={handleAdd}>
             Add Line Item
           </Button>
+          {hasPendingStructuralChange && (
+            <Button
+              type="button"
+              variant="default"
+              size="sm"
+              disabled={isPending}
+              onClick={() => void commitLineItems()}
+            >
+              Save
+            </Button>
+          )}
           {overridden && (
             <Button
               type="button"
