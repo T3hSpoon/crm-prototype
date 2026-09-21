@@ -3,12 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Sales Dashboard
 current_phase: 06
+current_phase_name: sales-dashboard
 status: completed
 stopped_at: Phase 06 complete — all phases complete
-last_updated: "2026-09-18T06:42:20.431Z"
+last_updated: "2026-09-18T12:56:18.298Z"
 last_activity: 2026-09-18
-last_activity_desc: "Completed quick task 260918-dll: Phase 6 dashboard refinements"
-state_head: 5aebcfb4a91904e1d6491a4c5194ac103df0bc56
+last_activity_desc: "Completed quick task 260918-fis: deal-documents mechanism (human_needed — needs a browser smoke test)"
+state_head: 44e2c3f1a7daf54204413d4f79107238aa8fb683
 progress:
   total_phases: 1
   completed_phases: 1
@@ -107,6 +108,31 @@ None yet.
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
 | 260918-dll | Phase 6 dashboard refinements: ClosedByOwnerChart shows deal value not count (DASH-05); TargetVsActualChart is now an AreaChart reading per-month targets from dashboard-config.ts instead of one constant | 2026-09-18 | 9f0243f | complete | [260918-dll-phase-6-dashboard-refinements-1-closedby](./quick/260918-dll-phase-6-dashboard-refinements-1-closedby/) |
+| 2 | Target vs. Actual chart: Target area renders behind Actual, both use straight (linear) lines instead of smoothed curves | 2026-09-18 | 22a73fe | — | — |
+| 3 | Target area: solid orange fill (new --chart-target token) instead of dashed grid-colored outline | 2026-09-18 | 6c93853 | — | — |
+| 4 | Target area color: muted cantaloupe yellow instead of orange | 2026-09-18 | ca50fda | — | — |
+| 5 | Owner Leaderboard: show Won contract count alongside value | 2026-09-18 | 23e7c62 | — | — |
+| 6 | Owner Leaderboard: converted to a table with Rank/Owner/Value/Contracts headers | 2026-09-18 | c35c414 | — | — |
+| 7 | Owner Leaderboard: added LTV and quantity-weighted ARPU columns | 2026-09-18 | c4ef79a | — | — |
+| 8 | Seed data: every Won deal gets 2+ service line items with distinct rates so ARPU blending is actually demonstrated | 2026-09-18 | 4b73e6e | — | — |
+| 9 | Seed data: every deal gets a $250-350 product unit + $15-25 service line item (realistic price bands) | 2026-09-18 | da6531e | — | — |
+| 10 | ARPU columns (Owner Leaderboard + Forecast Breakdown Table) now show 2 decimal places instead of rounding to whole dollars | 2026-09-18 | 392eb44 | — | — |
+| 11 | Seed data: contract terms now drawn from standard 3/6/12/24/36/48/60-month lengths only | 2026-09-18 | f46cd50 | — | — |
+| 260918-fis | Deal-documents mechanism: Generate Quote/Generate Agreement (static HTML templates), Upload PDF, and a new Documents column on the Pipeline table (format-labeled buttons or "No assets" tag) — in-memory only, no persistence | 2026-09-18 | 6a1b857 | human_needed | [260918-fis-add-a-deal-documents-mechanism-to-the-pi](./quick/260918-fis-add-a-deal-documents-mechanism-to-the-pi/) |
+| 12 | Seed data: unit sales target scaled to 12,000/year (was 480), same seasonal shape | 2026-09-18 | 7472475 | — | — |
+| 13 | Gauge bar corners squared off (cornerRadius 0); Target area color changed to mid-tone gray | 2026-09-18 | 64a5150 | — | — |
+| 14 | Pipeline table: Deal ID column moved to first position | 2026-09-18 | b3f31c3 | — | — |
+| 16 | Renamed 'Lifetime Contract Value' label to 'LTV' in Pipeline table, Forecast Breakdown table, and Agreement template | 2026-09-18 | 169f0f2 | — | — |
+| 17 | Pipeline: removed Min/Max value range filter from the toolbar (Close Date range filter kept) | 2026-09-18 | e976136 | — | — |
+| 18 | Restyled Quote/Agreement templates to match a real Idrive Inc quote reference; seeded 2 Won deals with real generated documents | 2026-09-18 | 40efc29 | — | — |
+| 19 | Added app-wide dark mode toggle (theme.ts/useTheme/ThemeToggle); fixed hardcoded chart axis-label gray to use --muted-foreground | 2026-09-18 | 5416a79 | — | — |
+| 20 | Restyled dark theme (background/card/border/primary/destructive + all chart tokens) to match an Idrive AI dashboard color reference | 2026-09-18 | 1850f08 | — | — |
+| 21 | Lost deals: show Lost Reason under sub-items, hide Add Line Item and document generation/upload controls | 2026-09-18 | 5ce9852 | — | — |
+| 22 | Seed data: Lost deals now get a real lostReason so the Lost Reason UI has something to show | 2026-09-18 | 4d32965 | — | — |
+| 23 | Stage dropdown: Lost option no longer offered when a deal is currently Won (Contracts) | 2026-09-18 | 0a0f96b | — | — |
+| 24 | Fixed the Lost flow: replaced a Popover-nested-in-Select (Radix dismiss-race bug) with a standalone Dialog matching the working Won flow | 2026-09-18 | 44e2c3f | — | — |
+| 25 | Forecast Breakdown table: per-tier accent colors (header dot/tint, row rail, subtotal rail) make the 4 confidence-group boundaries visually distinct; Grand Total left neutral | 2026-09-21 | eb902b0 | — | — |
+| 260921-e8z | Deal Terms inspect/edit mechanism: new DealTermsDialog editing the 7 deal-terms fields (Prorata/Grace Period/Contract Term/Frequency/Currency/Customer Type/Confidence Level) on an existing deal; "Deal Terms" button added to the drawer's document-actions row, right-aligned opposite Generate Quote/Agreement/Upload, available for all deals including Lost | 2026-09-21 | ec2996f | complete | [260921-e8z-add-a-deal-terms-inspect-edit-mechanism-](./quick/260921-e8z-add-a-deal-terms-inspect-edit-mechanism-/) |
 
 ### Roadmap Evolution
 
