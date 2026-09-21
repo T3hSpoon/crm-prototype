@@ -21,7 +21,21 @@ interface PipelineState {
   updateDeal: (
     id: string,
     patch: Partial<
-      Pick<Deal, "name" | "value" | "owner" | "closeDate" | "lineItems" | "confidenceLevel">
+      Pick<
+        Deal,
+        | "name"
+        | "value"
+        | "owner"
+        | "closeDate"
+        | "lineItems"
+        | "confidenceLevel"
+        | "prorata"
+        | "gracePeriodDays"
+        | "contractTermMonths"
+        | "frequency"
+        | "currency"
+        | "customerType"
+      >
     >,
   ) => Promise<void>;
   generateDocument: (dealId: string, kind: "quote" | "agreement") => Promise<void>;
