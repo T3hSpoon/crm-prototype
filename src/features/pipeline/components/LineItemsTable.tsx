@@ -18,6 +18,7 @@ import {
   type LineItemsFormInput,
   type LineItemsFormValues,
 } from "@/features/pipeline/components/deal-edit-schema";
+import { DealTermsDialog } from "@/features/pipeline/components/DealTermsDialog";
 import { UPDATE_FAILED_MESSAGE } from "@/features/pipeline/constants";
 import type { Deal, LineItem, LineItemType } from "@/shared/types/deal";
 import { computeSubtotal, sumLineItems } from "@/shared/utils/line-items";
@@ -73,6 +74,10 @@ export function LineItemsTable({ dealId, lineItems, overridden, deal }: LineItem
   // document generation never disables line-item editing or vice versa.
   const [isDocPending, setIsDocPending] = useState(false);
   const [docError, setDocError] = useState<string | null>(null);
+  // Local open-state for the Deal Terms inspect/edit dialog (quick task
+  // 260921-e8z) — mirrors StageSelect.tsx's pendingGroup-gated
+  // LostReasonDialog/WonContractTermsDialog conditional-mount pattern.
+  const [dealTermsOpen, setDealTermsOpen] = useState(false);
   // Never stored — always freshly derived every render (DEAL-05), mirroring
   // the removed drawer's own computation. Uses the last-committed `lineItems`
   // prop, not the form's live in-progress draft.
@@ -400,40 +405,54 @@ export function LineItemsTable({ dealId, lineItems, overridden, deal }: LineItem
           {error}
         </p>
       )}
-      {!isLost && (
-        <div className="flex flex-wrap items-center gap-2 border-t border-border pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={isDocPending}
-            onClick={() => void handleGenerate("quote")}
-          >
-            Generate Quote
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={isDocPending}
-            onClick={() => void handleGenerate("agreement")}
-          >
-            Generate Agreement
-          </Button>
-          <Input
-            type="file"
-            accept="application/pdf"
-            disabled={isDocPending}
-            className="max-w-48"
-            onChange={(e) => void handleUpload(e)}
-            aria-label="Upload PDF"
-          />
-          {deal.documents.length > 0 && (
-            <span className="text-xs text-muted-foreground">
-              {deal.documents.length} document{deal.documents.length === 1 ? "" : "s"}
-            </span>
-          )}
-        </div>
+      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-2">
+        {!isLost && (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isDocPending}
+              onClick={() => void handleGenerate("quote")}
+            >
+              Generate Quote
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isDocPending}
+              onClick={() => void handleGenerate("agreement")}
+            >
+              Generate Agreement
+            </Button>
+            <Input
+              type="file"
+              accept="application/pdf"
+              disabled={isDocPending}
+              className="max-w-48"
+              onChange={(e) => void handleUpload(e)}
+              aria-label="Upload PDF"
+            />
+            {deal.documents.length > 0 && (
+              <span className="text-xs text-muted-foreground">
+                {deal.documents.length} document{deal.documents.length === 1 ? "" : "s"}
+              </span>
+            )}
+          </div>
+        )}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="ml-auto"
+          onClick={() => setDealTermsOpen(true)}
+        >
+          Deal Terms
+        </Button>
+      </div>
+      {dealTermsOpen && (
+        <DealTermsDialog deal={deal} open onOpenChange={() => setDealTermsOpen(false)} />
       )}
       {docError && (
         <p role="alert" className="text-sm text-destructive">
