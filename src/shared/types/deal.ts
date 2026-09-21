@@ -79,6 +79,17 @@ export interface Deal {
   id: string;
   name: string;
   company: string;
+  /**
+   * Account context captured via the Add Deal wizard's cascading Company ->
+   * Prime Group -> Address -> Contact Selects (Quick task 260921-f5a),
+   * sourced from `data/mock/accounts-directory.ts`. Optional because the 150
+   * faker-generated seed deals in `seed-data.ts` predate this concept and
+   * are never backfilled — only deals created through the Add Deal wizard
+   * after this change carry these 3 fields.
+   */
+  primeGroup?: string;
+  address?: string;
+  contact?: string;
   value: number;
   owner: string;
   /** ISO 8601 */
@@ -139,6 +150,16 @@ export interface Deal {
 export interface NewDealInput {
   name: string;
   company: string;
+  /**
+   * Account context fields captured via the Add Deal wizard's cascading
+   * Company -> Prime Group -> Address -> Contact Selects (Quick task
+   * 260921-f5a). Required — the wizard mandates picking all 3 for every new
+   * deal, unlike `Deal`'s optional counterparts (which stay optional to
+   * accommodate the pre-existing faker-generated seed deals).
+   */
+  primeGroup: string;
+  address: string;
+  contact: string;
   value: number;
   owner: string;
   closeDate: string;
