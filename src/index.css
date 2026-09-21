@@ -87,6 +87,14 @@
     --chart-funnel-3: #2a78d6;
     --chart-funnel-4: #1c5cab;
     --chart-funnel-5: #104281;
+    /* Forecast confidence-tier accents — strongest confidence (100%) reads
+       as "go" green, easing down to a neutral gray for the unqualified
+       Open-to-RFP tier, so each group's boundary in the breakdown table is
+       immediately distinguishable at a glance. */
+    --confidence-100: #1baf7a;
+    --confidence-80: #2a78d6;
+    --confidence-50: #eda100;
+    --confidence-open: #94a1ae;
     --radius: 0.625rem;
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
@@ -142,6 +150,13 @@
     --chart-funnel-3: #17b8ac;
     --chart-funnel-4: #0d9488;
     --chart-funnel-5: #0f766e;
+    /* Forecast confidence-tier accents — same tier-to-hue mapping as the
+       light theme (100% strongest/green through Open-to-RFP neutral gray),
+       tuned for the dark navy palette. */
+    --confidence-100: #34d399;
+    --confidence-80: #5b8def;
+    --confidence-50: #f0a94e;
+    --confidence-open: #8b93a7;
     --sidebar: #0c1119;
     --sidebar-foreground: #f2f5fa;
     --sidebar-primary: #17b8ac;

@@ -30,6 +30,14 @@ interface ForecastBreakdownTableProps {
   deals: Deal[];
 }
 
+/** Confidence-tier accent color, keyed by the same CONFIDENCE_LEVELS order — strongest (100%) reads as "go" green, easing to neutral gray for the unqualified Open-to-RFP tier. */
+const CONFIDENCE_ACCENT: Record<(typeof CONFIDENCE_LEVELS)[number], string> = {
+  "100": "var(--confidence-100)",
+  "80": "var(--confidence-80)",
+  "50": "var(--confidence-50)",
+  "open-to-rfp": "var(--confidence-open)",
+};
+
 /**
  * Confidence-grouped financial breakdown table (Phase 5, FCST-03/FCST-04) —
  * every deal in the pipeline (open, won, lost) grouped by confidence level,
@@ -64,22 +72,37 @@ export function ForecastBreakdownTable({ deals }: ForecastBreakdownTableProps) {
           {CONFIDENCE_LEVELS.map((level) => {
             const groupDeals = grouped[level];
             const totals = computeGroupTotals(groupDeals);
+            const accent = CONFIDENCE_ACCENT[level];
             return (
               <Fragment key={level}>
-                <tr className="bg-muted/30">
+                <tr
+                  className="border-t-2"
+                  style={{ borderTopColor: accent, backgroundColor: `color-mix(in oklch, ${accent}, transparent 85%)` }}
+                >
                   <td colSpan={9} className="px-4 py-2 text-xs font-semibold">
-                    {CONFIDENCE_LEVEL_LABELS[level]}
+                    <span className="inline-flex items-center gap-2">
+                      <span
+                        aria-hidden="true"
+                        className="inline-block size-2.5 rounded-full"
+                        style={{ backgroundColor: accent }}
+                      />
+                      {CONFIDENCE_LEVEL_LABELS[level]}
+                    </span>
                   </td>
                 </tr>
                 {groupDeals.length === 0 ? (
-                  <tr className="border-t border-border">
+                  <tr className="border-t border-border" style={{ borderLeft: `3px solid ${accent}` }}>
                     <td colSpan={9} className="px-4 py-6 text-center text-muted-foreground">
                       No deals in this group yet.
                     </td>
                   </tr>
                 ) : (
                   groupDeals.map((deal) => (
-                    <tr key={deal.id} className="border-t border-border">
+                    <tr
+                      key={deal.id}
+                      className="border-t border-border"
+                      style={{ borderLeft: `3px solid ${accent}` }}
+                    >
                       <td className="px-4 py-2">{deal.company}</td>
                       <td className="px-4 py-2">{joinModelSkus(deal) || "—"}</td>
                       <td className="px-4 py-2">{joinServiceNames(deal) || "—"}</td>
@@ -98,7 +121,10 @@ export function ForecastBreakdownTable({ deals }: ForecastBreakdownTableProps) {
                     </tr>
                   ))
                 )}
-                <tr className="border-t border-border bg-muted/30">
+                <tr
+                  className="border-t border-border bg-muted/30"
+                  style={{ borderLeft: `3px solid ${accent}` }}
+                >
                   <td className="px-4 py-2 font-semibold">
                     {`Subtotal — ${CONFIDENCE_LEVEL_LABELS[level]}`}
                   </td>
