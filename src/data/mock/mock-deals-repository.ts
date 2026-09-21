@@ -40,6 +40,12 @@ export class MockDealsRepository implements DealsRepository {
       id: generateDealId(),
       name: input.name,
       company: input.company,
+      // Account context fields, captured via the Add Deal wizard's
+      // cascading Company/Prime Group/Address/Contact Selects (Quick task
+      // 260921-f5a) — direct pass-through, no transform.
+      primeGroup: input.primeGroup,
+      address: input.address,
+      contact: input.contact,
       value: input.value,
       owner: input.owner,
       closeDate: input.closeDate,

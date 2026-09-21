@@ -24,6 +24,17 @@ import {
   type AddDealFormInput,
   type AddDealFormValues,
 } from "@/features/pipeline/components/add-deal-schema";
+import {
+  getCompanyNames,
+  getPrimeGroupsForCompany,
+  type AccountPrimeGroup,
+} from "@/data/mock/accounts-directory";
+
+/**
+ * Company selector options, step 1 (Quick task 260921-f5a) — sourced from
+ * the static `ACCOUNTS_DIRECTORY`, safe to compute once at module scope.
+ */
+const COMPANY_OPTIONS = getCompanyNames();
 
 /** Same 5 labeled stage options this dialog and StageSelect both use. */
 const GROUP_OPTIONS: { value: AddDealFormValues["group"]; label: string }[] = [
@@ -75,6 +86,9 @@ const CONFIDENCE_LEVEL_OPTIONS: { value: AddDealFormValues["confidenceLevel"]; l
 const DEFAULT_VALUES: AddDealFormInput = {
   name: "",
   company: "",
+  primeGroup: "",
+  address: "",
+  contact: "",
   value: 0,
   owner: "",
   closeDate: "",
@@ -95,12 +109,14 @@ interface AddDealDialogProps {
 
 /**
  * Modal implementing a 2-step wizard (Phase 3, DEAL-06, D-01/D-02/D-03):
- * step 1 keeps the original 6-field intake (DEAL-01), step 2 captures the 5
- * new deal-terms fields (Prorata, Grace Period, Contract Term, Frequency,
- * Currency) for every new deal regardless of which pipeline stage/group is
- * selected on step 1. Both steps share a single `useForm` instance, so
- * Back/Next never lose values. On valid step-2 submit, calls
- * usePipelineStore().addDeal() then closes immediately.
+ * step 1 is now a 9-field intake (DEAL-01 original 6 plus the
+ * primeGroup/address/contact account-context cascade added by Quick task
+ * 260921-f5a), step 2 captures the 5 deal-terms fields (Prorata, Grace
+ * Period, Contract Term, Frequency, Currency) for every new deal regardless
+ * of which pipeline stage/group is selected on step 1. Both steps share a
+ * single `useForm` instance, so Back/Next never lose values. On valid
+ * step-2 submit, calls usePipelineStore().addDeal() then closes
+ * immediately.
  */
 export function AddDealDialog({ open, onOpenChange }: AddDealDialogProps) {
   const addDeal = usePipelineStore((s) => s.addDeal);
@@ -109,6 +125,13 @@ export function AddDealDialog({ open, onOpenChange }: AddDealDialogProps) {
     resolver: zodResolver(addDealSchema),
     defaultValues: DEFAULT_VALUES,
   });
+  // Company -> Prime Group -> Address -> Contact cascade (Quick task
+  // 260921-f5a). Recomputed each render — ACCOUNTS_DIRECTORY is tiny static
+  // data, no memoization needed, matching this file's existing style.
+  const watchedCompany = form.watch("company");
+  const watchedPrimeGroup = form.watch("primeGroup");
+  const primeGroupOptions: AccountPrimeGroup[] = getPrimeGroupsForCompany(watchedCompany);
+  const selectedPrimeGroup = primeGroupOptions.find((pg) => pg.name === watchedPrimeGroup);
 
   const onSubmit = async (values: AddDealFormValues) => {
     // `prorata` is "yes"/"no" in AddDealFormValues (see add-deal-schema.ts
@@ -128,7 +151,16 @@ export function AddDealDialog({ open, onOpenChange }: AddDealDialogProps) {
   };
 
   const handleNext = async () => {
-    const valid = await form.trigger(["name", "company", "owner", "closeDate", "group"]);
+    const valid = await form.trigger([
+      "name",
+      "company",
+      "primeGroup",
+      "address",
+      "contact",
+      "owner",
+      "closeDate",
+      "group",
+    ]);
     if (valid) setStep(2);
   };
 
@@ -161,7 +193,114 @@ export function AddDealDialog({ open, onOpenChange }: AddDealDialogProps) {
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor={field.name}>Company</FieldLabel>
-                    <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        form.setValue("primeGroup", "");
+                        form.setValue("address", "");
+                        form.setValue("contact", "");
+                      }}
+                    >
+                      <SelectTrigger id={field.name} aria-invalid={fieldState.invalid} className="w-full">
+                        <SelectValue placeholder="Select a company" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COMPANY_OPTIONS.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="primeGroup"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Prime Group</FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        form.setValue("address", "");
+                        form.setValue("contact", "");
+                      }}
+                      disabled={!watchedCompany}
+                    >
+                      <SelectTrigger id={field.name} aria-invalid={fieldState.invalid} className="w-full">
+                        <SelectValue
+                          placeholder={watchedCompany ? "Select a prime group" : "Select a company first"}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {primeGroupOptions.map((pg) => (
+                          <SelectItem key={pg.id} value={pg.name}>
+                            {pg.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="address"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Address</FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => field.onChange(value)}
+                      disabled={!watchedPrimeGroup}
+                    >
+                      <SelectTrigger id={field.name} aria-invalid={fieldState.invalid} className="w-full">
+                        <SelectValue
+                          placeholder={watchedPrimeGroup ? "Select an address" : "Select a prime group first"}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(selectedPrimeGroup ? [selectedPrimeGroup.address] : []).map((address) => (
+                          <SelectItem key={address} value={address}>
+                            {address}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="contact"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Contact</FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => field.onChange(value)}
+                      disabled={!watchedPrimeGroup}
+                    >
+                      <SelectTrigger id={field.name} aria-invalid={fieldState.invalid} className="w-full">
+                        <SelectValue
+                          placeholder={watchedPrimeGroup ? "Select a contact" : "Select a prime group first"}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(selectedPrimeGroup?.contacts ?? []).map((c) => (
+                          <SelectItem key={c.id} value={c.name}>
+                            {c.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}

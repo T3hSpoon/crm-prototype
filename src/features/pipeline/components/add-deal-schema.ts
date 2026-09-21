@@ -1,14 +1,19 @@
 import { z } from "zod";
 
 /**
- * Step 1 of the Add Deal wizard (DEAL-01) — today's original 6 intake
- * fields. D-01: all 6 are required (no partial-add path). D-02: `group` is
- * the stage selector — the user picks which of the 5 pipeline groups the
- * new deal starts in.
+ * Step 1 of the Add Deal wizard (DEAL-01) — 9 intake fields: the original 6
+ * plus the 3 account-context fields (`primeGroup`/`address`/`contact`)
+ * added by the Company -> Prime Group -> Address -> Contact cascade (Quick
+ * task 260921-f5a). D-01: all 9 are required (no partial-add path). D-02:
+ * `group` is the stage selector — the user picks which of the 5 pipeline
+ * groups the new deal starts in.
  */
 export const addDealStep1Schema = z.object({
   name: z.string().min(1, "Name is required"),
   company: z.string().min(1, "Company is required"),
+  primeGroup: z.string().min(1, "Prime Group is required"),
+  address: z.string().min(1, "Address is required"),
+  contact: z.string().min(1, "Contact is required"),
   value: z.coerce.number().nonnegative("Value must be zero or positive"),
   owner: z.string().min(1, "Owner is required"),
   closeDate: z.string().min(1, "Close date is required"),
