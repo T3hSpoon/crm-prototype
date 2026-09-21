@@ -6,10 +6,10 @@ current_phase: 06
 current_phase_name: sales-dashboard
 status: completed
 stopped_at: Phase 06 complete — all phases complete
-last_updated: "2026-09-18T12:56:18.298Z"
+last_updated: "2026-09-21T08:22:22.814Z"
 last_activity: 2026-09-18
 last_activity_desc: "Completed quick task 260918-fis: deal-documents mechanism (human_needed — needs a browser smoke test)"
-state_head: 44e2c3f1a7daf54204413d4f79107238aa8fb683
+state_head: 2df2f30dcce60ef0908586feae72d0bf89b98485
 progress:
   total_phases: 1
   completed_phases: 1
@@ -133,6 +133,8 @@ None yet.
 | 24 | Fixed the Lost flow: replaced a Popover-nested-in-Select (Radix dismiss-race bug) with a standalone Dialog matching the working Won flow | 2026-09-18 | 44e2c3f | — | — |
 | 25 | Forecast Breakdown table: per-tier accent colors (header dot/tint, row rail, subtotal rail) make the 4 confidence-group boundaries visually distinct; Grand Total left neutral | 2026-09-21 | eb902b0 | — | — |
 | 260921-e8z | Deal Terms inspect/edit mechanism: new DealTermsDialog editing the 7 deal-terms fields (Prorata/Grace Period/Contract Term/Frequency/Currency/Customer Type/Confidence Level) on an existing deal; "Deal Terms" button added to the drawer's document-actions row, right-aligned opposite Generate Quote/Agreement/Upload, available for all deals including Lost | 2026-09-21 | ec2996f | complete | [260921-e8z-add-a-deal-terms-inspect-edit-mechanism-](./quick/260921-e8z-add-a-deal-terms-inspect-edit-mechanism-/) |
+| 260921-f5a | Add Deal modal: Company converted from free text to a dropdown; new cascading Prime Group / Address / Contact dropdowns sourced from a new hand-written mock accounts directory (Prime Group = internal org directory grouping units by location); Deal/NewDealInput widened (primeGroup/address/contact); existing seed data untouched | 2026-09-21 | 72cf08e | complete | [260921-f5a-add-deal-modal-convert-company-to-a-drop](./quick/260921-f5a-add-deal-modal-convert-company-to-a-drop/) |
+| 28 | Line item Add/Remove no longer auto-commit — a Save button now appears next to Add Line Item when a row was added/removed but not yet persisted; per-field blur-commits unchanged | 2026-09-21 | 2df2f30 | — | — |
 
 ### Roadmap Evolution
 
